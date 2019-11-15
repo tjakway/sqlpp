@@ -11,28 +11,7 @@ object CheckFile {
     extends SqlppError(msg)
 
   class FileErrors(val errors: Seq[FileError])
-    extends SqlppError(FileErrors.formatErrors(errors))
-
-  object FileErrors {
-    /**
-     * put each error on a separate tab-indented line
-     * @param errors
-     * @return
-     */
-    def formatErrors(errors: Seq[FileError]): String = {
-      val sb: Appendable = new StringBuffer()
-      val fmt: Formatter = new Formatter(sb)
-
-      if(errors.nonEmpty) {
-        fmt.format("Errors:\n")
-        errors.foreach { thisError =>
-          fmt.format("\t%s\n", thisError.toString)
-        }
-      }
-
-      fmt.toString.trim
-    }
-  }
+    extends SqlppError(SqlppError.formatErrors(errors))
 
   object FileError {
     class FileDoesNotExistError(val f: File)
