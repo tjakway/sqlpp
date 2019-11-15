@@ -55,8 +55,11 @@ object Config {
 
     for {
       checkedSource <- checkSource(config.source)
+      checkedOutputTargets <- checkOutputTargets(config.outputTargets)
     } yield {
       config
+        .copy(source = checkedSource)
+        .copy(outputTargets = checkedOutputTargets)
     }
   }
 }
