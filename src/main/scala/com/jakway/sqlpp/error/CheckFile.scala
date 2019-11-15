@@ -75,6 +75,6 @@ object CheckFile {
   def checkExists: FileCheckF = mkCheck(_.exists)(new FileDoesNotExistError(_))
   def checkReadable: FileCheckF = mkCheck(_.canRead)(new CannotReadError(_))
   def checkWriteable: FileCheckF = mkCheck(_.canWrite)(new CannotWriteError(_))
-  def checkFile: FileCheckF = mkCheck(_.isFile)(new NotFileError(_))
-  def checkDirectory: FileCheckF = mkCheck(_.isDirectory)(new NotDirectoryError(_))
+  def checkIsFile: FileCheckF = mkCheck(_.isFile)(new NotFileError(_))
+  def checkIsDirectory: FileCheckF = mkCheck(_.isDirectory)(new NotDirectoryError(_))
 }
