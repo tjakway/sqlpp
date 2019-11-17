@@ -31,7 +31,7 @@ object MergeMaps {
             //(if successful)
           case Some(existingValue) =>
             handleDuplicates(thisKey)(existingValue)(thisValue)
-              .map(mergedValue => acc.updated(thisKey, mergedValue))
+              .map(mergedValue => acc.updated(mergedValue._1, mergedValue._2))
         }
       }
     }
