@@ -10,10 +10,15 @@ case class Config(source: File,
                   allowOverwrite: Boolean)
 
 object Config {
-  class ConfigError(val causes: Seq[SqlppError])
-    extends SqlppError(SqlppError.formatErrors(causes))
+  class ConfigError(override val msg: String)
+    extends SqlppError(msg) {
 
-  class OutputTargetErrors(override val causes: Seq[SqlppError])
+    def this(causes: Seq[SqlppError]) {
+      this(SqlppError.formatErrors(causes))
+    }
+  }
+
+  class OutputTargetErrors(val causes: Seq[SqlppError])
     extends ConfigError(causes)
 
   def default(source: File): Config =

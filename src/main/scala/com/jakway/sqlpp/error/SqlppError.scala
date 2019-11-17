@@ -24,4 +24,9 @@ object SqlppError {
 
     fmt.toString.trim
   }
+
+  def formatThrowable(t: Throwable): String = {
+    //TODO: print stack trace, etc.
+    t.toString
+  }
 }
