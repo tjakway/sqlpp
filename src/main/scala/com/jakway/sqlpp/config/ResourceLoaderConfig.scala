@@ -13,6 +13,9 @@ import scala.util.{Failure, Success}
 /**
  * sets up velocity resource loader properties
  * see http://velocity.apache.org/engine/1.7/developer-guide.html#configuring-resource-loaders
+ *
+ * You probably want to use StandardResourceLoaders.getCombinedProperties and pass the result
+ * to VelocityEngine
  */
 object ResourceLoaderConfig {
   type PropertyMap = Map[String, String]
@@ -95,4 +98,156 @@ object ResourceLoaderConfig {
     }
   }
 
+  object StandardResourceLoaders {
+
+    class StandardResourceLoaderError(override val msg: String)
+      extends ResourceLoaderConfigError(msg)
+
+    class NoResourceLoaderTypesPassed
+      extends StandardResourceLoaderError("Must pass at least one object of LoaderType")
+
+
+    //entries from http://velocity.apache.org/engine/1.7/developer-guide.html#configuring-resource-loaders
+    private def standardEntries(name: String)
+                       (description: String,
+                        fullyQualifiedClassName: String,
+                        pathOption: Option[Seq[String]]): PropertyMap = {
+      val m = Map {
+        s"$name.resource.loader.description" -> description
+        s"$name.resource.loader.class" -> fullyQualifiedClassName
+      }
+
+      pathOption match {
+        case Some(path) => m.updated(s"$name.resource.loader.path",, multipleEntries(path))
+        case None => m
+      }
+    }
+
+    private def fileEntries(name: String): PropertyMap = {
+      Map {
+        s"$name.resource.loader.cache" -> "false"
+        s"$name.resource.loader.modificationCheckInterval" -> "0"
+      }
+    }
+
+
+    sealed trait LoaderType {
+      val loaderName: String
+    }
+
+    case object FileLoader extends LoaderType {
+      override val loaderName: String = "file"
+    }
+
+    case object ClassLoader extends LoaderType {
+      override val loaderName: String = "class"
+    }
+
+    case object JarLoader extends LoaderType {
+      override val loaderName: String = "jar"
+    }
+
+    /**
+     * get a resource loader configured to look in the passed directories
+     *
+     * @param forDirs
+     * @return
+     */
+    private def getFileResourceLoader(forDirs: Seq[String]): Either[SqlppError, ResourceLoaderProperties] = {
+      ResourceLoaderProperties.mergePropertyMaps(
+        standardEntries(FileLoader.loaderName)(
+          "Velocity File Resource Loader",
+          "org.apache.velocity.runtime.resource.loader.FileResourceLoader",
+          Some(forDirs)),
+        fileEntries(FileLoader.loaderName)
+      ).map { propMap =>
+        new ResourceLoaderProperties(Set(FileLoader.loaderName), propMap)
+      }
+    }
+
+    private def getClassResourceLoader: Either[SqlppError, ResourceLoaderProperties] =
+      Right(new ResourceLoaderProperties(Set(ClassLoader.loaderName),
+        standardEntries(ClassLoader.loaderName)(
+          "Velocity Classpath Resource Loader",
+          "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader",
+          None)))
+
+    private def getJarResourceLoader(forJars: Seq[String]): Either[SqlppError, ResourceLoaderProperties] =
+      Right(new ResourceLoaderProperties(Set(JarLoader.loaderName),
+        standardEntries(JarLoader.loaderName)(
+          "Velocity Jar Resource Loader",
+          "org.apache.velocity.runtime.resource.loader.JarResourceLoader",
+          Some(forJars))))
+
+    /**
+     * remaining arguments are ignored if not relevant to the passed loader type
+     *
+     * @param forLoaderType
+     * @param dirs
+     * @param jars
+     * @return
+     */
+    private def loaderTypeToResourceLoaderProperties(
+                                                      forLoaderType: LoaderType,
+                                                      dirs: Seq[String],
+                                                      jars: Seq[String]): Either[SqlppError, ResourceLoaderProperties] = {
+
+      forLoaderType match {
+        case FileLoader => getFileResourceLoader(dirs)
+        case ClassLoader => getClassResourceLoader
+        case JarLoader => getJarResourceLoader(jars)
+      }
+    }
+
+
+    def getCombinedLoader(forLoaderTypes: Set[LoaderType],
+                          dirs: Seq[String],
+                          jars: Seq[String]): Either[SqlppError, ResourceLoaderProperties] = {
+
+
+      val toPropertiesE = {
+        val empty: Either[SqlppError, Set[ResourceLoaderProperties]] = Right(Set())
+        val res = forLoaderTypes.foldLeft(empty) {
+          case (eAcc, thisLoaderType) => eAcc.flatMap { acc =>
+            loaderTypeToResourceLoaderProperties(thisLoaderType, dirs, jars)
+              .map(res => acc + res)
+          }
+        }
+
+        res.map(_.toSeq)
+      }
+
+      toPropertiesE.flatMap { toProperties =>
+        //divide into head and tail so we can start with the head and fold without needing a zero element
+        toProperties.headOption match {
+          case Some(head) => {
+            val start: Either[SqlppError, ResourceLoaderProperties] = Right(head)
+            toProperties.tail.foldLeft(start) {
+              case (eAcc, properties) => eAcc.flatMap { acc =>
+                acc.merge(properties)
+              }
+            }
+          }
+          //need to request at least one resource loader
+          case None => Left(new NoResourceLoaderTypesPassed())
+        }
+      }
+    }
+
+    /**
+     *
+     * *****Class entry point*****
+     *
+     * @param forLoaderTypes
+     * @param dirs
+     * @param jars
+     * @return
+     */
+    def getCombinedProperties(forLoaderTypes: Set[LoaderType],
+                          dirs: Seq[String],
+                          jars: Seq[String]): Either[SqlppError, Properties] = {
+      getCombinedLoader(forLoaderTypes, dirs, jars)
+        .flatMap(_.toPropertiesObject)
+    }
+  }
 }
