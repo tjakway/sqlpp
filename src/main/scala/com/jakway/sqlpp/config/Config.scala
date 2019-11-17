@@ -1,7 +1,8 @@
-package com.jakway.sqlpp
+package com.jakway.sqlpp.config
 
 import java.io.File
 
+import com.jakway.sqlpp.Backend
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 
 case class Config(source: File,
