@@ -19,7 +19,9 @@ libraryDependencies ++=
       "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
 
       //json parser
-      "org.json4s" % "json4s-native_2.12" % "3.6.7"
+      "org.json4s" % "json4s-native_2.12" % "3.6.7",
+
+      "org.apache.velocity" % "velocity-engine-core" % "2.1"
       )
 
 //enable more warnings
