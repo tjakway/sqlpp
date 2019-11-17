@@ -13,9 +13,9 @@ object MapToProperties {
    * @return
    */
   def apply(kvs: Map[String, String])
-           (prop: Properties): Try[Map[String, String]] = Try {
+           (prop: Properties): Try[Map[String, Object]] = Try {
 
-    val empty: Map[String, String] = Map()
+    val empty: Map[String, Object] = Map()
     kvs.foldLeft(empty) {
       case (prevValues, (key, value)) => {
         Option(prop.setProperty(key, value)) match {
