@@ -16,7 +16,7 @@ object Config {
     extends ConfigError(causes)
 
   def default(source: File): Config =
-    Config(source, Seq(), false)
+    Config(source, Seq(), allowOverwrite = false)
 
   private def checkSource(source: File): Either[SqlppError, File] = {
     for {
@@ -67,15 +67,6 @@ object Config {
 case class OutputTarget(backend: Backend,
                         dest: File)
 
-case class Backend(names: Set[String]) {
-  def matches(x: String): Boolean =
-    names.exists(Backend.areEqual(_, x))
-}
 
-object Backend {
-  def areEqual(left: String, right: String): Boolean = {
-    def normalizeString(str: String): String = str.trim.toLowerCase()
 
-    normalizeString(left) == normalizeString(right)
-  }
-}
+
