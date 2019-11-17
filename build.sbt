@@ -9,7 +9,7 @@ scalacOptions ++= Seq("-feature")
 libraryDependencies ++= 
   Seq("org.slf4j" % "slf4j-parent" % "1.7.6",
       "ch.qos.logback"  %  "logback-classic"    % "1.2.1",
-      "com.github.scopt" %% "scopt" % "3.5.0",
+      "com.github.scopt" %% "scopt" % "3.7.1",
 
       //scalatest
       //see http://www.scalatest.org/install
@@ -17,6 +17,9 @@ libraryDependencies ++=
       "org.scalactic" %% "scalactic" % "3.0.4" % "test",
 
       "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+
+      //json parser
+      "org.json4s" % "json4s-native_2.12" % "3.6.7"
       )
 
 //enable more warnings
