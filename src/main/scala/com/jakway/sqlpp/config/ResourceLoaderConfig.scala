@@ -69,8 +69,8 @@ object ResourceLoaderConfig {
           }
         }
 
-        case Failure(t) => new ToPropertiesError(
-          s"Error caused by exception: " + SqlppError.formatThrowable(t))
+        case Failure(t) => Left(new ToPropertiesError(
+          s"Error caused by exception: " + SqlppError.formatThrowable(t)))
       }
     }
   }
@@ -118,7 +118,7 @@ object ResourceLoaderConfig {
       }
 
       pathOption match {
-        case Some(path) => m.updated(s"$name.resource.loader.path",, multipleEntries(path))
+        case Some(path) => m.updated(s"$name.resource.loader.path", multipleEntries(path))
         case None => m
       }
     }
