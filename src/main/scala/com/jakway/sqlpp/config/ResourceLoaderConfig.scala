@@ -57,7 +57,7 @@ object ResourceLoaderConfig {
 
       //will be edited in-place by MapToProperties
       val ret = new Properties()
-      MapToProperties(finalPropertyMap)(ret) match {
+      MapToProperties(finalPropertyMap, ret) match {
 
         case Success(overwrittenValues) => {
           //no entries should have been overwritten
