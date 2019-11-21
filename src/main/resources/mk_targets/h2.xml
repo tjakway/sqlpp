@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <!-- H2 adds an underscore for some reason -->
+    <entry key="in_index_type_pk_autoinc">INTEGER PRIMARY KEY AUTO_INCREMENT</entry>
+
+    <!-- H2 treats BINARY separate from BLOB, BINARY is kept fully in memory, BLOB is not -->
+    <entry key="in_blob_type">BINARY</entry>
+</properties>

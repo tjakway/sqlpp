@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <!-- Default values will be overridden by target-specific files -->
+
+    <!-- AKA 2^16 -->
+    <entry key="in_text_type">VARCHAR(65535)</entry>
+    <entry key="in_index_type">INTEGER</entry>
+    <entry key="in_index_type_pk_autoinc">INTEGER PRIMARY KEY AUTOINCREMENT</entry>
+
+    <entry key="in_blob_type">BLOB</entry>
+
+    <comment>A type that can refer to a primary key (e.g. as a foreign key)</comment>
+    <entry key="in_index_ref_type">INTEGER</entry>
+    <entry key="in_decimal_type">DECIMAL</entry>
+</properties>

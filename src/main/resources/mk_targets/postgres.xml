@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="in_text_type">TEXT</entry>
+    <entry key="in_index_type">SERIAL</entry>
+    <entry key="in_index_type_pk_autoinc">SERIAL PRIMARY KEY</entry>
+</properties>
