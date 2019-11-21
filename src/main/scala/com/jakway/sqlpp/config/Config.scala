@@ -1,15 +1,100 @@
 package com.jakway.sqlpp.config
 
 import java.io.File
+import java.nio.charset.{Charset, StandardCharsets}
 
 import com.jakway.sqlpp.Backend
+import com.jakway.sqlpp.config.Config.{ConfigError, Defaults}
+import com.jakway.sqlpp.config.ConfigErrors.{InvalidLoaderTypesError, NoSourcePassedError}
+import com.jakway.sqlpp.config.ResourceLoaderConfig.PropertyMap
+import com.jakway.sqlpp.config.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
+
+case class UncheckedConfig(source: Option[File] = None,
+                           outputTemplate: Option[String] = None,
+                           inputEncoding: Option[String] = None,
+                           additionalBuildTargets: Seq[String] = Seq(),
+                           resourceLoaderTypes: Set[LoaderType] = Set(),
+                           allowOverwrite: Boolean = Defaults.allowOverwrite)
+
+object UncheckedConfig {
+  def check(uncheckedConfig: UncheckedConfig): Either[SqlppError, Config] = {
+    Check(uncheckedConfig)
+  }
+
+  private object Check {
+    def apply(uncheckedConfig: UncheckedConfig): Either[SqlppError, Config] = {
+      //TODO
+      ???
+    }
+
+    private def checkLoaderTypes(loaderTypes: Set[LoaderType]): Either[SqlppError, Set[LoaderType]] = {
+      if(loaderTypes.isEmpty) {
+        Left(new InvalidLoaderTypesError("Need at least 1 resource loader type"))
+      } else {
+        Right(loaderTypes)
+      }
+    }
+
+    private def checkSource(source: Option[File]): Either[SqlppError, File] = {
+      source match {
+        case None => Left(NoSourcePassedError)
+        case Some(f) => {
+          for {
+            _ <- CheckFile.checkExists(f)
+            _ <- CheckFile.checkIsFile(f)
+            _ <- CheckFile.checkReadable(f)
+          } yield {f}
+        }
+      }
+    }
+  }
+
+}
+
+object ConfigErrors {
+  class InvalidLoaderTypesError(override val msg: String)
+    extends ConfigError(msg)
+
+  case object NoSourcePassedError
+    extends ConfigError("No source passed.")
+}
+
+case class ExtraTemplateOptions(extraDirs: Seq[File],
+                                extraJars: Seq[String]) {
+  def dirsToStrings: Seq[String] = extraDirs.map(_.getAbsolutePath)
+}
 
 case class Config(source: File,
                   outputTargets: Seq[OutputTarget],
-                  allowOverwrite: Boolean)
+                  allowOverwrite: Boolean,
+                  inputEncoding: String,
+                  resourceLoaderTypes: Set[LoaderType],
+                  extraTemplateOptions: ExtraTemplateOptions) {
+
+  val additionalVelocityProperties: PropertyMap = {
+    import org.apache.velocity.runtime.{RuntimeConstants => VelocityConstants}
+    Map {
+      VelocityConstants.INPUT_ENCODING -> inputEncoding
+
+      //strict settings to catch bugs
+      VelocityConstants.RUNTIME_REFERENCES_STRICT -> "true"
+      VelocityConstants.STRICT_MATH -> "true"
+      VelocityConstants.VM_ARGUMENTS_STRICT -> "true"
+
+      VelocityConstants.SKIP_INVALID_ITERATOR -> "false"
+    }
+  }
+}
 
 object Config {
+  object Defaults {
+    val defaultEncoding: Charset = StandardCharsets.UTF_8
+    val allowOverwrite: Boolean = false
+    val extraTemplateOptions: ExtraTemplateOptions = ExtraTemplateOptions(Seq(), Seq())
+  }
+
+
   class ConfigError(override val msg: String)
     extends SqlppError(msg) {
 
@@ -20,9 +105,6 @@ object Config {
 
   class OutputTargetErrors(val causes: Seq[SqlppError])
     extends ConfigError(causes)
-
-  def default(source: File): Config =
-    Config(source, Seq(), allowOverwrite = false)
 
   private def checkSource(source: File): Either[SqlppError, File] = {
     for {

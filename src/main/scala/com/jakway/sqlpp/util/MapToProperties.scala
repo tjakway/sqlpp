@@ -12,8 +12,8 @@ object MapToProperties {
    * @param prop
    * @return
    */
-  def apply(kvs: Map[String, String])
-           (prop: Properties): Try[Map[String, Object]] = Try {
+  def apply(kvs: Map[String, String],
+            prop: Properties): Try[Map[String, Object]] = Try {
 
     val empty: Map[String, Object] = Map()
     kvs.foldLeft(empty) {
@@ -24,5 +24,16 @@ object MapToProperties {
         }
       }
     }
+  }
+
+  def apply(kvs: Map[String, String]): Try[Properties] = withNewProperties(kvs)
+
+
+  def withNewProperties(kvs: Map[String, String]): Try[Properties] = {
+    val newProps = new Properties()
+
+    //ignore overwritten properties--there can't be any
+    apply(kvs, newProps)
+      .map(_ => newProps)
   }
 }

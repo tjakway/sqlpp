@@ -135,6 +135,10 @@ object ResourceLoaderConfig {
       val loaderName: String
     }
 
+    object LoaderType {
+      val all: Set[LoaderType] = Set(FileLoader, ClassLoader, JarLoader)
+    }
+
     case object FileLoader extends LoaderType {
       override val loaderName: String = "file"
     }
