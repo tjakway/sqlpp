@@ -44,7 +44,7 @@ object MergeProperties {
   def propertiesToMap(prop: Properties): Try[Map[KeyType, ValueType]] = Try {
     import scala.collection.JavaConverters._
     prop
-      .stringPropertyNames()
+      .keySet()
       .asScala
       .foldLeft(Map.empty: Map[KeyType, ValueType]) {
       case (acc, thisPropName) => {
