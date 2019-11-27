@@ -15,8 +15,17 @@ trait TemplateEngine {
   val initProperties: Properties
   val velocityEngine: VelocityEngine
 
-  def apply(input: UserTemplate,
-            outputTarget: OutputTarget): Either[SqlppError, File] = {
+  def apply(templateName: String,
+            vs: ValueSource,
+            output: File): Either[SqlppError, File] = {
+
+    for {
+      _ <- TemplateEngine.checkTemplateExists(velocityEngine, templateName)
+      vc <- vs.toVelocityContext
+      
+    } yield {
+
+    }
     ???
   }
 }
@@ -25,6 +34,17 @@ object TemplateEngine {
   class TemplateEngineError(override val msg: String)
     extends SqlppError(msg)
 
+  class TemplateNotFoundError(override val msg: String)
+    extends TemplateEngineError(msg)
+
+  def checkTemplateExists(engine: VelocityEngine,
+                          templateName: String): Either[SqlppError, Unit] = {
+      if(engine.templateExists(templateName)) {
+        Right({})
+      } else {
+        Left(new TemplateNotFoundError(s"Could not find template $templateName"))
+      }
+  }
 
 
   private object Constructor {
