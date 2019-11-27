@@ -60,10 +60,6 @@ object ConfigErrors {
     extends ConfigError("No source passed.")
 }
 
-case class ExtraTemplateOptions(extraDirs: Seq[File],
-                                extraJars: Seq[String]) {
-  def dirsToStrings: Seq[String] = extraDirs.map(_.getAbsolutePath)
-}
 
 case class Config(source: File,
                   outputTargets: Seq[OutputTarget],

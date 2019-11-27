@@ -1,11 +1,11 @@
-package com.jakway.sqlpp
+package com.jakway.sqlpp.template
 
 import java.io.File
 import java.util.Properties
 
-import com.jakway.sqlpp.config.ResourceLoaderConfig.PropertyMap
-import com.jakway.sqlpp.config.{Config, OutputTarget, ResourceLoaderConfig}
+import com.jakway.sqlpp.ValueSource
 import com.jakway.sqlpp.error.SqlppError
+import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.util.{MapToProperties, MergeMaps, MergeProperties}
 import org.apache.velocity.app.VelocityEngine
 
@@ -33,6 +33,11 @@ trait TemplateEngine {
 object TemplateEngine {
   type PropertyMap = Map[String, String]
 
+  case class ExtraTemplateOptions(extraDirs: Seq[File],
+                                  extraJars: Seq[String]) {
+    def dirsToStrings: Seq[String] = extraDirs.map(_.getAbsolutePath)
+  }
+
   class TemplateEngineError(override val msg: String)
     extends SqlppError(msg)
 
@@ -41,7 +46,7 @@ object TemplateEngine {
 
   def checkTemplateExists(engine: VelocityEngine,
                           templateName: String): Either[SqlppError, Unit] = {
-      if(engine.templateExists(templateName)) {
+      if(engine.resourceExists(templateName)) {
         Right({})
       } else {
         Left(new TemplateNotFoundError(s"Could not find template $templateName"))
@@ -86,31 +91,33 @@ object TemplateEngine {
       }
     }
 
-    private def additionalVelocityPropertiesToPropertiesObject(config: Config):
+    private def additionalVelocityPropertiesToPropertiesObject(additionalVelocityProperties: PropertyMap):
       Either[SqlppError, Properties] = {
 
-      MapToProperties.withNewProperties(config.additionalVelocityProperties) match {
+      MapToProperties.withNewProperties(additionalVelocityProperties) match {
         case Success(x) => Right(x)
         case Failure(t) => Left(new LoadConfigVelocityPropertiesError(
-          config.additionalVelocityProperties, t))
+          additionalVelocityProperties, t))
       }
     }
 
     /**
      * get the loader properties and merge them with the additional properties
      * listed in config
-     * @param config
      * @return
      */
-    private def getMergedProperties(config: Config): Either[SqlppError, Properties] = {
+    private def getMergedProperties(resourceLoaderTypes: Set[LoaderType])
+                                   (extraTemplateOptions: ExtraTemplateOptions)
+                                   (additionalVelocityProperties: PropertyMap):
+    Either[SqlppError, Properties] = {
       for {
         loaderProperties <- ResourceLoaderConfig
             .StandardResourceLoaders
             .getCombinedProperties(
-              config.resourceLoaderTypes,
-              config.extraTemplateOptions.dirsToStrings,
-              config.extraTemplateOptions.extraJars)
-        additionalOptions <- additionalVelocityPropertiesToPropertiesObject(config)
+              resourceLoaderTypes,
+              extraTemplateOptions.dirsToStrings,
+              extraTemplateOptions.extraJars)
+        additionalOptions <- additionalVelocityPropertiesToPropertiesObject(additionalVelocityProperties)
 
         mergedProperties <- MergeProperties.merge(
           loaderProperties,
@@ -130,9 +137,16 @@ object TemplateEngine {
       }
     }
 
-    def apply: Config => Either[SqlppError, TemplateEngine] = { config =>
+
+    def apply: Set[LoaderType] =>
+               ExtraTemplateOptions =>
+               PropertyMap =>
+               Either[SqlppError, TemplateEngine] = {
+      loaderTypes => extraTemplateOptions => additionalVelocityProperties =>
       for {
-        mergedProperties <- getMergedProperties(config)
+        mergedProperties <- getMergedProperties(
+          loaderTypes)(extraTemplateOptions)(additionalVelocityProperties)
+
         engine <- getVelocityEngine(mergedProperties)
       } yield {
         new TemplateEngine {
@@ -143,7 +157,5 @@ object TemplateEngine {
     }
   }
 
-
-  def apply: Config => Either[SqlppError, TemplateEngine] =
-    Constructor.apply
+  def apply = Constructor.apply
 }
