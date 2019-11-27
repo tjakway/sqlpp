@@ -2,13 +2,12 @@ package com.jakway.sqlpp.template
 
 import java.util.Properties
 
-import com.jakway.sqlpp.TemplateEngine.PropertyMap
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ResourceLoaderConfig.ResourceLoaderProperties.ToPropertiesError
+import com.jakway.sqlpp.template.TemplateEngine.PropertyMap
 import com.jakway.sqlpp.util.{MapToProperties, MergeMaps}
 
 import scala.util.{Failure, Success}
-
 import org.apache.velocity.runtime.{RuntimeConstants => VelocityConstants}
 
 /**
