@@ -9,4 +9,4 @@ scalaVersion := CommonSettings.scalaVersion
 
 scalacOptions ++= CommonSettings.scalacOptions
 
-libraryDependencies ++= Dependencies.common
+libraryDependencies ++= (Dependencies.common ++ Dependencies.apacheVelocity)
