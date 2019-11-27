@@ -1,11 +1,5 @@
 package com.jakway.sqlpp
 
-import java.io.InputStream
-import java.util.Properties
-
-import com.jakway.sqlpp.config.Config.ConfigError
-import com.jakway.sqlpp.error.SqlppError
-
 /**
  * @param names
  * @param templateIdentifier resource path, file path, etc.

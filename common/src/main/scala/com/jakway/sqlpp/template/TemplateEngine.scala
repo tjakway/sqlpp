@@ -31,6 +31,8 @@ trait TemplateEngine {
 }
 
 object TemplateEngine {
+  type PropertyMap = Map[String, String]
+
   class TemplateEngineError(override val msg: String)
     extends SqlppError(msg)
 

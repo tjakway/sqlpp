@@ -6,8 +6,8 @@ import java.nio.charset.{Charset, StandardCharsets}
 import com.jakway.sqlpp.Backend
 import com.jakway.sqlpp.config.Config.{ConfigError, Defaults}
 import com.jakway.sqlpp.config.ConfigErrors.{InvalidLoaderTypesError, NoSourcePassedError}
-import com.jakway.sqlpp.config.ResourceLoaderConfig.PropertyMap
-import com.jakway.sqlpp.config.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
+import com.jakway.sqlpp.template.ResourceLoaderConfig.PropertyMap
+import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 
 case class UncheckedConfig(source: Option[File] = None,
