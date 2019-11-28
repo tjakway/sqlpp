@@ -88,7 +88,6 @@ object Main {
 
   private val resourceLoaders: Set[LoaderType] = Set {
     ResourceLoaderConfig.StandardResourceLoaders.ClassLoader
-    ResourceLoaderConfig.StandardResourceLoaders.JarLoader
   }
 
   private def getTemplateEngine: Either[SqlppError, TemplateEngine] = {
