@@ -24,7 +24,7 @@ object Main {
   }
 
   val outputTemplate: String = "mk_targets/target_template.xml.vtl"
-  val sourceDir: File = new File("build_template/src/main/resources/mk_targets")
+  val sourceDir: File = new File("build_templates/src/main/resources/mk_targets")
   val outputDir: File = new File("main/src/main/resources/")
 
   def run(): Either[SqlppError, Unit] = {
