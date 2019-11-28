@@ -7,6 +7,7 @@ import com.jakway.sqlpp.Backend
 import com.jakway.sqlpp.config.Config.{ConfigError, Defaults}
 import com.jakway.sqlpp.config.ConfigErrors.{InvalidLoaderTypesError, NoSourcePassedError}
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
+import com.jakway.sqlpp.template.GeneralVelocityOptions
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.{ExtraTemplateOptions, PropertyMap}
 
@@ -68,19 +69,8 @@ case class Config(source: File,
                   resourceLoaderTypes: Set[LoaderType],
                   extraTemplateOptions: ExtraTemplateOptions) {
 
-  val additionalVelocityProperties: PropertyMap = {
-    import org.apache.velocity.runtime.{RuntimeConstants => VelocityConstants}
-    Map {
-      VelocityConstants.INPUT_ENCODING -> inputEncoding
-
-      //strict settings to catch bugs
-      VelocityConstants.RUNTIME_REFERENCES_STRICT -> "true"
-      VelocityConstants.STRICT_MATH -> "true"
-      VelocityConstants.VM_ARGUMENTS_STRICT -> "true"
-
-      VelocityConstants.SKIP_INVALID_ITERATOR -> "false"
-    }
-  }
+  val additionalVelocityProperties: PropertyMap =
+    GeneralVelocityOptions(inputEncoding)
 }
 
 object Config {
