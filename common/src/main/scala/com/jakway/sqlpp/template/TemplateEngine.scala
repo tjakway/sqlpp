@@ -3,7 +3,6 @@ package com.jakway.sqlpp.template
 import java.io.{BufferedWriter, File, FileOutputStream, OutputStreamWriter, Writer}
 import java.util.Properties
 
-import com.jakway.sqlpp.ValueSource
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.{OpenOutputWriterError, TemplateEngineException}
