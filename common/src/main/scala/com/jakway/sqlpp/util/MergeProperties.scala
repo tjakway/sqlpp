@@ -50,7 +50,7 @@ object MergeProperties {
       case (acc, thisPropName) => {
         //ensure it returns a valid object by calling toString on the returned String
         //Properties returns null if they key isn't found
-        acc.updated(thisPropName, prop.getProperty(thisPropName).toString)
+        acc.updated(thisPropName.toString, prop.getProperty(thisPropName.toString).toString)
       }
     }
   }
