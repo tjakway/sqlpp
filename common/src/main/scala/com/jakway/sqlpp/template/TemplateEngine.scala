@@ -1,12 +1,12 @@
 package com.jakway.sqlpp.template
 
-import java.io.{File, Writer}
+import java.io.{BufferedWriter, File, FileOutputStream, OutputStreamWriter, Writer}
 import java.util.Properties
 
 import com.jakway.sqlpp.ValueSource
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
-import com.jakway.sqlpp.template.TemplateEngine.TemplateEngineException
+import com.jakway.sqlpp.template.TemplateEngine.{OpenOutputWriterError, TemplateEngineException}
 import com.jakway.sqlpp.util.{MapToProperties, MergeMaps, MergeProperties}
 import org.apache.velocity.Template
 import org.apache.velocity.app.VelocityEngine
@@ -41,6 +41,47 @@ trait TemplateEngine {
     case Success(x) => x
     case Failure(t) => Left(new TemplateEngineException(t))
   }
+
+  def multiApplyWriters(templateName: String,
+            ioMap: Map[ValueSource, Writer]): Either[SqlppError, Unit] = {
+    TemplateEngine
+      .GetTemplate(velocityEngine, templateName, encoding)
+      .flatMap { template =>
+        val empty: Either[SqlppError, Unit] = Right({})
+        ioMap.foldLeft(empty) {
+          case (eAcc, (vs, output)) => eAcc.flatMap { acc =>
+            for {
+              _ <- apply(template, vs, output)
+              _ <- TemplateEngine.genericWrapTry(Try(output.close()))
+            } yield {}
+          }
+        }
+      }
+  }
+
+
+  //can't overload on erased types
+  def multiApplyFiles(templateName: String,
+            ioMap: Map[ValueSource, File]): Either[SqlppError, Unit] = {
+    val empty: Either[SqlppError, Map[ValueSource, Writer]] = Right(Map.empty)
+    val writerMap = ioMap.foldLeft(empty) {
+      case (eAcc, (vs, dest)) => eAcc.flatMap { acc =>
+        openOutput(dest)
+          .map(output => acc.updated(vs, output))
+      }
+    }
+
+    writerMap.flatMap(multiApplyWriters(templateName, _))
+  }
+
+  private def openOutput(file: File): Either[SqlppError, Writer] = {
+    Try(new BufferedWriter(
+      new OutputStreamWriter(
+        new FileOutputStream(file), encoding))) match {
+      case Success(x) => Right(x)
+      case Failure(t) => Left(new OpenOutputWriterError(t))
+    }
+  }
 }
 
 object TemplateEngine {
@@ -53,6 +94,16 @@ object TemplateEngine {
 
   class TemplateEngineError(override val msg: String)
     extends SqlppError(msg)
+
+  class TemplateOutputError(override val msg: String)
+    extends SqlppError(msg)
+
+  class OpenOutputWriterError(override val msg: String)
+    extends TemplateOutputError(msg) {
+    def this(t: Throwable) {
+      this(SqlppError.formatThrowable(t))
+    }
+  }
 
   class TemplateEngineException(val throwable: Throwable)
     extends TemplateEngineError(SqlppError.formatThrowable(throwable))
@@ -100,6 +151,13 @@ object TemplateEngine {
         case Success(x) => Right(x)
         case Failure(t) => Left(new TemplateEngineException(t))
       }
+    }
+  }
+
+  private def genericWrapTry[A](f: => Try[A]): Either[SqlppError, A] = {
+    f match {
+      case Success(x) => Right(x)
+      case Failure(t) => Left(new TemplateEngineException(t))
     }
   }
 
