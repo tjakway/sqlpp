@@ -46,5 +46,5 @@ object ContextUtil {
 
   def propertiesToContextE_(properties: Properties): 
     Either[SqlppError, VelocityContext] =
-    propertiesToContextE_(properties, PropertiesToContextError.apply)
+    propertiesToContextE(properties, PropertiesToContextError.apply)
 }
