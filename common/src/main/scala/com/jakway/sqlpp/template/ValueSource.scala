@@ -1,9 +1,13 @@
 package com.jakway.sqlpp.template
 
+import java.io.{BufferedInputStream, File, FileInputStream}
+
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.util.{ContextUtil, MapToProperties}
 import org.apache.velocity.VelocityContext
 import java.util.Properties
+
+import com.jakway.sqlpp.template.ValueSource.ValueSourceError
 
 import scala.util.{Failure, Success, Try}
 
@@ -29,6 +33,19 @@ object ValueSource {
 case class PropertySource(prop: Properties) extends ValueSource {
   override def toVelocityContext: Either[SqlppError, VelocityContext] = {
     ContextUtil.propertiesToContextE_(prop)
+  }
+}
+
+object PropertySource {
+  def fromXML(file: File): Either[SqlppError, PropertySource] = {
+    Try {
+      val p = new Properties()
+      p.loadFromXML(new BufferedInputStream(new FileInputStream(file)))
+      PropertySource(p)
+    } match {
+      case Success(x) => Right(x)
+      case Failure(t) => Left(ValueSourceError(t))
+    }
   }
 }
 
