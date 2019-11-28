@@ -26,7 +26,7 @@ object ResourceLoaderConfig {
   private def multipleEntries(entries: Seq[String],
                               separator: String =
                                 defaultMultipleEntriesSeparator): String = {
-    entries.reduce(_ + separator + _)
+    entries.reduceOption(_ + separator + _).getOrElse("")
   }
 
   class ResourceLoaderProperties(val loaderNames: Set[String],
