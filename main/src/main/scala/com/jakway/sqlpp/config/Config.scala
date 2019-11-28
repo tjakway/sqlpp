@@ -6,9 +6,9 @@ import java.nio.charset.{Charset, StandardCharsets}
 import com.jakway.sqlpp.Backend
 import com.jakway.sqlpp.config.Config.{ConfigError, Defaults}
 import com.jakway.sqlpp.config.ConfigErrors.{InvalidLoaderTypesError, NoSourcePassedError}
-import com.jakway.sqlpp.template.ResourceLoaderConfig.PropertyMap
-import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
+import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
+import com.jakway.sqlpp.template.TemplateEngine.{ExtraTemplateOptions, PropertyMap}
 
 case class UncheckedConfig(source: Option[File] = None,
                            outputTemplate: Option[String] = None,
@@ -150,7 +150,3 @@ object Config {
 
 case class OutputTarget(backend: Backend,
                         dest: File)
-
-
-
-
