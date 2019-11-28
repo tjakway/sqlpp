@@ -1,4 +1,4 @@
-package com.jakway.sqlpp
+package com.jakway.sqlpp.template
 
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.util.{ContextUtil, MapToProperties}
