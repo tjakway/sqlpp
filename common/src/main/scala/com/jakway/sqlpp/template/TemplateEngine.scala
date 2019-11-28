@@ -24,13 +24,9 @@ trait TemplateEngine {
             vs: ValueSource,
             output: Writer): Either[SqlppError, Unit] = {
 
-    for {
-      _ <- TemplateEngine.checkTemplateExists(velocityEngine, templateName)
-      template <- TemplateEngine.getTemplate(velocityEngine,
-        templateName, encoding)
-    } yield {
-      apply(template, vs, output)
-    }
+    TemplateEngine
+      .GetTemplate(velocityEngine, templateName, encoding)
+      .flatMap(apply(_, vs, output))
   }
 
   def apply(velocityTemplate: Template,
@@ -75,23 +71,38 @@ object TemplateEngine {
     }
   }
 
-  def checkTemplateExists(engine: VelocityEngine,
-                          templateName: String): Either[SqlppError, Unit] = {
+  object GetTemplate {
+    def apply(engine: VelocityEngine,
+              templateName: String,
+              encoding: String): Either[SqlppError, Template] = {
+      for {
+        _ <- checkTemplateExists(engine, templateName)
+        res <- getTemplate(engine, templateName, encoding)
+      } yield {
+        res
+      }
+    }
+
+
+    private def checkTemplateExists(engine: VelocityEngine,
+                            templateName: String): Either[SqlppError, Unit] = {
       if(engine.resourceExists(templateName)) {
         Right({})
       } else {
         Left(new TemplateNotFoundError(s"Could not find template $templateName"))
       }
-  }
+    }
 
-  def getTemplate(engine: VelocityEngine,
-                  templateName: String,
-                  encoding: String): Either[SqlppError, Template] = {
-    Try(engine.getTemplate(templateName, encoding)) match {
-      case Success(x) => Right(x)
-      case Failure(t) => Left(new TemplateEngineException(t))
+    private def getTemplate(engine: VelocityEngine,
+                    templateName: String,
+                    encoding: String): Either[SqlppError, Template] = {
+      Try(engine.getTemplate(templateName, encoding)) match {
+        case Success(x) => Right(x)
+        case Failure(t) => Left(new TemplateEngineException(t))
+      }
     }
   }
+
 
   /**
    * wraps issue-specific exceptions in SqlppError subclasses on failure
