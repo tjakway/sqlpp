@@ -2,18 +2,17 @@ package com.jakway.sqlpp.util
 
 import java.util.Properties
 
-import com.jakway.sqlpp.error.SqlppError
-import com.jakway.sqlpp.util.MergeMaps.HandleDuplicatesF
-
 import scala.util.{Failure, Success, Try}
 
 object MergeProperties {
   type KeyType = String
   type ValueType = String
+  type HandleDuplicatesF[ErrorType] = MergeMaps.HandleDuplicatesF[KeyType, ValueType, ErrorType]
+
   def merge[ErrorType](
             left: Properties,
             right: Properties,
-            handleDuplicatesF: HandleDuplicatesF[KeyType, ValueType, ErrorType],
+            handleDuplicatesF: HandleDuplicatesF[ErrorType],
             handleException: Throwable => ErrorType):
   Either[ErrorType, Properties] = {
     def tryToEither[A]: Try[A] => Either[ErrorType, A] = {
