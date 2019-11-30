@@ -5,14 +5,23 @@ import java.io.{File, FileFilter}
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.ExtraTemplateOptions
-import com.jakway.sqlpp.template.{GeneralVelocityOptions, PropertySource, ResourceLoaderConfig, TemplateEngine, ValueSource}
-import com.jakway.sqlpp.util.MergeMaps.HandleDuplicatesF
+import com.jakway.sqlpp.template._
 import com.jakway.sqlpp.util.{MergeProperties, WithFormatter}
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.util.Success
+object Paths {
+  import WithFormatter.WithPathSeparator
+  val outputTemplate: String = WithPathSeparator("mk_targets%starget_template.xml.vtl")
+  val sourceDir: File = new File(WithPathSeparator(
+    "build_templates%ssrc%smain%sresources%smk_targets"))
+  val outputDir: File = new File(WithPathSeparator("main%ssrc%smain%sresources%sgen"))
+
+  val defaultsFilename: String = "defaults.xml"
+}
 
 object Main {
+  import Paths._
+
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]): Unit = {
@@ -25,12 +34,6 @@ object Main {
     }
   }
 
-  val outputTemplate: String = WithFormatter("mk_targets%ntarget_template.xml.vtl")
-  val sourceDir: File = new File(WithFormatter(
-    "build_templates%nsrc%nmain%nresources%nmk_targets"))
-  val outputDir: File = new File(WithFormatter("main%nsrc%nmain%nresources%ngen"))
-
-  val defaultsFilename: String = "defaults.xml"
 
   def run(): Either[SqlppError, Unit] = {
     for {
