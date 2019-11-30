@@ -65,7 +65,6 @@ object Main {
         Right((key, right))
     }
 
-    def apply = mergeDefaults _
 
     def mergeDefaults(propertySources: Seq[File]):
       Either[SqlppError, Seq[PropertySource]] = {
@@ -85,6 +84,11 @@ object Main {
         val empty: (Option[PropertySource], Map[File, PropertySource]) =
           (None, Map.empty)
 
+        //split the list of properties into defaults and others
+        //
+        //alternatively we could just find the defaults while
+        //leaving them in the list while making sure to properly
+        //merge duplicates that are equal
         val (defaultsOption, rest) = vsMap.foldLeft(empty) {
           case ((None, acc), (thisSourceFile, prop)) => {
             if(thisSourceFile.getName == defaultsFilename) {
@@ -100,6 +104,7 @@ object Main {
 
         defaultsOption match {
           case Some(defaults) => {
+            val res = {
               rest.foldLeft(
                 Right(Seq.empty): Either[SqlppError, Seq[PropertySource]]) {
                 case (eAcc, (thisSourceFile, thisSource)) => eAcc.flatMap { acc =>
@@ -112,12 +117,16 @@ object Main {
                     acc :+ PropertySource(mergedProperties)
                   }
                 }
+              }
             }
+            //add defaults back to the list
+            res.map(acc => acc :+ defaults)
           }
           case None => Left(new MergeDefaultsError(
             s"Expected to find a template named $defaultsFilename " +
               s"containing default properties"))
         }
+
       }
     }
   }
