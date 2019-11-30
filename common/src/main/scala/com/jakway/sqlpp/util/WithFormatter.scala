@@ -22,7 +22,6 @@ object WithFormatter {
 
   object WithPathSeparator {
     private val formatStrRegex: Regex = """(?<!\\\\)%s""".r
-    val logger: Logger = LoggerFactory.getLogger(getClass)
 
     //see https://stackoverflow.com/questions/5971964/file-separator-or-file-pathseparator
     //regarding which field to use
@@ -39,8 +38,6 @@ object WithFormatter {
       //then make a Seq of that length
       val replaceArgs: Seq[String] =
         List.fill(countFormatStrings(formatStr))(useSeparator)
-
-      logger.debug(s"Processing < $formatStr > with $replaceArgs")
 
       WithFormatter.apply(formatStr, replaceArgs: _*)
     }
