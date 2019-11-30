@@ -45,65 +45,83 @@ object Main {
     }
   }
 
-  class MergeDefaultsError(override val msg: String)
-    extends SqlppError(msg)
+  object MergeDefaults {
+    val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  private def mergeDefaults(propertySources: Seq[File]):
-    Either[SqlppError, Seq[PropertySource]] = {
+    class MergeDefaultsError(override val msg: String)
+      extends SqlppError(msg)
 
-    def handleDuplicates: MergeProperties.HandleDuplicatesF[SqlppError] = {
+    object MergeDefaultsError {
+      def apply(throwable: Throwable): MergeDefaultsError =
+        new MergeDefaultsError(SqlppError.formatThrowable(throwable))
+    }
+
+
+    private def preferRightSide: MergeProperties.HandleDuplicatesF[SqlppError] = {
       key => left => right =>
-        Left(new MergeDefaultsError(s"Unexpected duplicate entries for $key: " +
-          s"($left, $right)"))
+        logger.debug(s"Duplicate properties for $key:" +
+          s" ($left, $right), preferring right side")
+
+        Right((key, right))
     }
 
+    def apply = mergeDefaults _
 
-    val eVSMap: Either[SqlppError, Map[File, PropertySource]] =
-    propertySources.foldLeft(
-      Right(Map.empty): Either[SqlppError, Map[File, PropertySource]]) {
-      case (eAcc, thisSourceFile) => eAcc.flatMap { acc =>
-        PropertySource.fromXML(thisSourceFile)
-          .map(acc.updated(thisSourceFile, _))
-      }
-    }
+    def mergeDefaults(propertySources: Seq[File]):
+      Either[SqlppError, Seq[PropertySource]] = {
 
-    eVSMap.flatMap { vsMap =>
-      val empty: (Option[PropertySource], Map[File, PropertySource]) =
-        (None, Map.empty)
 
-      val (defaultsOption, rest) = vsMap.foldLeft(empty) {
-        case ((None, acc), (thisSourceFile, prop)) => {
-          if(thisSourceFile.getName == defaultsFilename) {
-            (Some(prop), acc)
-          } else {
-            (None, acc.updated(thisSourceFile, prop))
+
+      val eVSMap: Either[SqlppError, Map[File, PropertySource]] =
+        propertySources.foldLeft(
+          Right(Map.empty): Either[SqlppError, Map[File, PropertySource]]) {
+          case (eAcc, thisSourceFile) => eAcc.flatMap { acc =>
+            PropertySource.fromXML(thisSourceFile)
+              .map(acc.updated(thisSourceFile, _))
           }
         }
-        case ((x@Some(_), acc), (thisSourceFile, prop)) => {
-          (x, acc.updated(thisSourceFile, prop))
-        }
-      }
 
-      defaultsOption match {
-        case Some(defaults) => {
-          val res = {
-            rest.foldLeft(
-              Right(Seq.empty): Either[SqlppError, Seq[PropertySource]]) {
-              case (eAcc, (thisSourceFile, thisSource)) => eAcc.flatMap { acc =>
-                MergeProperties.merge()
+      eVSMap.flatMap { vsMap =>
+        val empty: (Option[PropertySource], Map[File, PropertySource]) =
+          (None, Map.empty)
 
-                thisSource.prop
-              }
+        val (defaultsOption, rest) = vsMap.foldLeft(empty) {
+          case ((None, acc), (thisSourceFile, prop)) => {
+            if(thisSourceFile.getName == defaultsFilename) {
+              (Some(prop), acc)
+            } else {
+              (None, acc.updated(thisSourceFile, prop))
             }
           }
+          case ((x@Some(_), acc), (thisSourceFile, prop)) => {
+            (x, acc.updated(thisSourceFile, prop))
+          }
         }
-        case None => Left(new MergeDefaultsError(
-          s"Expected to find a template named $defaultsFilename " +
-            s"containing default properties"))
-      }
 
+        defaultsOption match {
+          case Some(defaults) => {
+              rest.foldLeft(
+                Right(Seq.empty): Either[SqlppError, Seq[PropertySource]]) {
+                case (eAcc, (thisSourceFile, thisSource)) => eAcc.flatMap { acc =>
+                  val eMergedProperties = MergeProperties.merge(
+                    defaults.prop, thisSource.prop,
+                    preferRightSide,
+                    MergeDefaultsError.apply)
+
+                  eMergedProperties.map { mergedProperties =>
+                    acc :+ PropertySource(mergedProperties)
+                  }
+                }
+            }
+          }
+          case None => Left(new MergeDefaultsError(
+            s"Expected to find a template named $defaultsFilename " +
+              s"containing default properties"))
+        }
+      }
     }
   }
+
 
   private def getValueSources(srcDir: File): Seq[File] = {
     val filter: FileFilter = new FileFilter {
