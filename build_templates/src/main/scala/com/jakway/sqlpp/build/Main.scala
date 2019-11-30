@@ -7,7 +7,7 @@ import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.Lo
 import com.jakway.sqlpp.template.TemplateEngine.ExtraTemplateOptions
 import com.jakway.sqlpp.template.{GeneralVelocityOptions, PropertySource, ResourceLoaderConfig, TemplateEngine, ValueSource}
 import com.jakway.sqlpp.util.MergeMaps.HandleDuplicatesF
-import com.jakway.sqlpp.util.MergeProperties
+import com.jakway.sqlpp.util.{MergeProperties, WithFormatter}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.Success
@@ -25,9 +25,10 @@ object Main {
     }
   }
 
-  val outputTemplate: String = "mk_targets/target_template.xml.vtl"
-  val sourceDir: File = new File("build_templates/src/main/resources/mk_targets")
-  val outputDir: File = new File("main/src/main/resources/")
+  val outputTemplate: String = WithFormatter("mk_targets%ntarget_template.xml.vtl")
+  val sourceDir: File = new File(WithFormatter(
+    "build_templates%nsrc%nmain%nresources%nmk_targets"))
+  val outputDir: File = new File(WithFormatter("main%nsrc%nmain%nresources%ngen"))
 
   val defaultsFilename: String = "defaults.xml"
 
