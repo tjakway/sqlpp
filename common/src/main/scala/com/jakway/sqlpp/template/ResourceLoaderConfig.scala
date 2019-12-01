@@ -49,7 +49,7 @@ object ResourceLoaderConfig {
       //the property map with the combined loader entry
       val finalPropertyMap =
         props.updated(
-          VelocityConstants.RESOURCE_LOADER,
+          VelocityConstants.RESOURCE_LOADERS,
           getLoaderNamesEntry)
 
 
@@ -111,8 +111,8 @@ object ResourceLoaderConfig {
                         fullyQualifiedClassName: String,
                         pathOption: Option[Seq[String]]): PropertyMap = {
       val m = Map {
-        s"$name.resource.loader.description" -> description
-        s"$name.resource.loader.class" -> fullyQualifiedClassName
+        s"resource.loader.$name.description" -> description
+        s"resource.loader.$name.class" -> fullyQualifiedClassName
       }
 
       pathOption match {
@@ -123,8 +123,8 @@ object ResourceLoaderConfig {
 
     private def fileEntries(name: String): PropertyMap = {
       Map {
-        s"$name.resource.loader.cache" -> "false"
-        s"$name.resource.loader.modificationCheckInterval" -> "0"
+        s"resource.loader.$name.cache" -> "false"
+        s"resource.loader.$name.modificationCheckInterval" -> "0"
       }
     }
 
