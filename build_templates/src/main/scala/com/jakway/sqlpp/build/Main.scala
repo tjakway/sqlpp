@@ -41,7 +41,11 @@ object Main {
       _ <- checkOutputDir(outputDir)
 
       vsFiles = getValueSources(sourceDir)
-      vsMap <- valueSourcesToMap(vsFiles)
+      sources <- MergeDefaults.mergeDefaults(vsFiles)
+
+      vsMap = sources.zip(vsFiles).map {
+        case (source, sourceFile) => (source: ValueSource, getAssociatedOutput(sourceFile))
+      }.toMap
 
       templateEngine <- getTemplateEngine
     } yield {
@@ -69,6 +73,41 @@ object Main {
         Right((key, right))
     }
 
+    private def noDuplicates: MergeProperties.HandleDuplicatesF[SqlppError] = {
+      key => left => right =>
+        Left(new MergeDefaultsError(
+          s"Unexpected duplicate properties for $key:" +
+          s" ($left, $right)"))
+    }
+
+    def mergeDefaults(vsMap: Map[ValueSource, File]):
+      Either[SqlppError, Map[ValueSource, File]] = {
+
+      val empty: (Map[PropertySource, File], Map[ValueSource, File]) =
+        (Map.empty, Map.empty)
+
+      val (propertySources, rest) = vsMap.foldLeft(empty) {
+        case ((accPropertySources, accRest), (key, value)) => {
+          key match {
+            case p@PropertySource(_) =>
+              (accPropertySources.updated(p, value), accRest)
+            case _ => (accPropertySources, accRest.updated(key, value))
+          }
+        }
+      }
+
+      val propertySourceSeq = propertySources.toSeq
+      val propertySourceKeys = propertySourceSeq.map(_._1)
+      val propertySourceValues = propertySourceSeq.map(_._2)
+
+      for {
+        mergedDefaults <-
+          mergeDefaults()
+
+
+      }
+
+    }
 
     def mergeDefaults(propertySources: Seq[File]):
       Either[SqlppError, Seq[PropertySource]] = {
@@ -85,29 +124,29 @@ object Main {
         }
 
       eVSMap.flatMap { vsMap =>
-        val empty: (Option[PropertySource], Map[File, PropertySource]) =
-          (None, Map.empty)
+        val empty: (Option[(PropertySource, Int)], Map[File, PropertySource], Int) =
+          (None, Map.empty, 0)
 
         //split the list of properties into defaults and others
         //
         //alternatively we could just find the defaults while
         //leaving them in the list while making sure to properly
         //merge duplicates that are equal
-        val (defaultsOption, rest) = vsMap.foldLeft(empty) {
-          case ((None, acc), (thisSourceFile, prop)) => {
+        val (defaultsOption, rest, _) = vsMap.foldLeft(empty) {
+          case ((None, acc, pos), (thisSourceFile, prop)) => {
             if(thisSourceFile.getName == defaultsFilename) {
-              (Some(prop), acc)
+              (Some((prop, pos)), acc, pos + 1)
             } else {
-              (None, acc.updated(thisSourceFile, prop))
+              (None, acc.updated(thisSourceFile, prop), pos + 1)
             }
           }
-          case ((x@Some(_), acc), (thisSourceFile, prop)) => {
-            (x, acc.updated(thisSourceFile, prop))
+          case ((x@Some(_), acc, pos), (thisSourceFile, prop)) => {
+            (x, acc.updated(thisSourceFile, prop), pos + 1)
           }
         }
 
         defaultsOption match {
-          case Some(defaults) => {
+          case Some((defaults, defaultsPos)) => {
             val res = {
               rest.foldLeft(
                 Right(Seq.empty): Either[SqlppError, Seq[PropertySource]]) {
@@ -123,8 +162,12 @@ object Main {
                 }
               }
             }
-            //add defaults back to the list
-            res.map(acc => acc :+ defaults)
+
+            //add defaults back to the list at the position it was found
+            res.map { acc =>
+              val (left, right) = acc.splitAt(defaultsPos)
+              left ++ Seq(defaults) ++ right
+            }
           }
           case None => Left(new MergeDefaultsError(
             s"Expected to find a template named $defaultsFilename " +
