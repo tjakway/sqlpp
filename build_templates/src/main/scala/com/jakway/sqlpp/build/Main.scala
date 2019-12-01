@@ -80,39 +80,8 @@ object Main {
           s" ($left, $right)"))
     }
 
-    def mergeDefaults(vsMap: Map[ValueSource, File]):
-      Either[SqlppError, Map[ValueSource, File]] = {
-
-      val empty: (Map[PropertySource, File], Map[ValueSource, File]) =
-        (Map.empty, Map.empty)
-
-      val (propertySources, rest) = vsMap.foldLeft(empty) {
-        case ((accPropertySources, accRest), (key, value)) => {
-          key match {
-            case p@PropertySource(_) =>
-              (accPropertySources.updated(p, value), accRest)
-            case _ => (accPropertySources, accRest.updated(key, value))
-          }
-        }
-      }
-
-      val propertySourceSeq = propertySources.toSeq
-      val propertySourceKeys = propertySourceSeq.map(_._1)
-      val propertySourceValues = propertySourceSeq.map(_._2)
-
-      for {
-        mergedDefaults <-
-          mergeDefaults()
-
-
-      }
-
-    }
-
     def mergeDefaults(propertySources: Seq[File]):
       Either[SqlppError, Seq[PropertySource]] = {
-
-
 
       val eVSMap: Either[SqlppError, Map[File, PropertySource]] =
         propertySources.foldLeft(
