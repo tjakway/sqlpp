@@ -1,5 +1,7 @@
 package com.jakway.sqlpp.util.env
 
+import com.jakway.sqlpp.util.PrintThrowable
+
 trait StringPropertyReader[ErrorType]
   extends PropertyReader[String, String, ErrorType]
 
