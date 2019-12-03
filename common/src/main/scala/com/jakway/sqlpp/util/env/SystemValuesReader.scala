@@ -3,7 +3,8 @@ package com.jakway.sqlpp.util.env
 import scala.util.{Failure, Success, Try}
 
 trait SystemValuesReader[ErrorType]
-  extends StringPropertyReader[ErrorType] {
+  extends StringPropertyReader[ErrorType]
+    with StringPropertyReader.ErrorFormatter {
 
   /**
    * @param t caused by
@@ -30,9 +31,9 @@ trait SystemValuesReader[ErrorType]
     //see https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/System.html#getProperty(java.lang.String)
     Try(Option(getSystemValue(key))) match {
       case Success(Some(foundValue)) => Right(foundValue)
-      case Success(None) => onKeyNotFound(key)
-      case Failure(t) if badKeyError(t) => onInvalidKey(key)(t)
-      case Failure(t) => onOtherError(key)(t)
+      case Success(None) => onKeyNotFound(mkErrorMsg(key, "key not found"))
+      case Failure(t) if badKeyError(t) => onInvalidKey(mkErrorMsg(key, t))
+      case Failure(t) => onOtherError(mkErrorMsg(key, t))
     }
   }
 }
