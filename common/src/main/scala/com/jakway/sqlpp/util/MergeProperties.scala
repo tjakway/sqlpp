@@ -2,12 +2,63 @@ package com.jakway.sqlpp.util
 
 import java.util.Properties
 
+import org.slf4j.{Logger, LoggerFactory}
+
 import scala.util.{Failure, Success, Try}
 
 object MergeProperties {
   type KeyType = String
   type ValueType = String
   type HandleDuplicatesF[ErrorType] = MergeMaps.HandleDuplicatesF[KeyType, ValueType, ErrorType]
+
+  class HandleDuplicatesFunctions[ErrorType](val mkError: String => ErrorType,
+                                             val enableLogging: Boolean
+                                               = HandleDuplicatesFunctions
+                                                  .defaultEnableLogging) {
+    private val logger: Logger = LoggerFactory.getLogger(getClass)
+
+    private def log(key: KeyType,
+                    left: ValueType,
+                    right: ValueType,
+                    chose: Option[ValueType]): Unit = {
+      if(enableLogging) {
+        val choseMsg: String =
+          chose.map(c => s"; chose $c")
+               .getOrElse("")
+
+        logger.debug(
+          s"Found duplicate values for key $key: ($left, $right)"
+            + choseMsg)
+      } else {}
+    }
+
+    def noDuplicates: HandleDuplicatesF[ErrorType] = {
+      key => left => right =>
+
+        log(key, left, right, None)
+        Left(mkError(s"Found unexpected duplicate values" +
+          s" for key $key: ($left, $right) "))
+    }
+
+    private def preferSide(
+      chooseF: ValueType => ValueType => ValueType):
+      HandleDuplicatesF[ErrorType] = {
+      key => left => right =>
+        val choice = chooseF(left)(right)
+        log(key, left, right, Some(choice))
+        Right((key, choice))
+    }
+
+    private def chooseLeft:  ValueType => ValueType => ValueType = x => y => x
+    private def chooseRight: ValueType => ValueType => ValueType = x => y => y
+
+    def preferLeft:  HandleDuplicatesF[ErrorType] = preferSide(chooseLeft)
+    def preferRight: HandleDuplicatesF[ErrorType] = preferSide(chooseRight)
+  }
+
+  object HandleDuplicatesFunctions {
+    val defaultEnableLogging: Boolean = true
+  }
 
   def merge[ErrorType](
             left: Properties,
