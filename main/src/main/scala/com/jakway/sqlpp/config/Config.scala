@@ -50,13 +50,7 @@ object UncheckedConfig {
       }
     }
   }
-
 }
-
-object ConfigErrors {
-
-}
-
 
 case class Config(source: File,
                   outputTargets: Seq[OutputTarget],
