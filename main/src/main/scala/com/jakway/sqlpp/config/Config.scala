@@ -6,6 +6,7 @@ import java.nio.charset.{Charset, StandardCharsets}
 import com.jakway.sqlpp.Backend
 import com.jakway.sqlpp.config.Config.{ConfigError, Defaults}
 import com.jakway.sqlpp.config.ConfigErrors.{InvalidLoaderTypesError, NoSourcePassedError}
+import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import com.jakway.sqlpp.template.GeneralVelocityOptions
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
@@ -54,11 +55,7 @@ object UncheckedConfig {
 }
 
 object ConfigErrors {
-  class InvalidLoaderTypesError(override val msg: String)
-    extends ConfigError(msg)
 
-  case object NoSourcePassedError
-    extends ConfigError("No source passed.")
 }
 
 
@@ -81,16 +78,7 @@ object Config {
   }
 
 
-  class ConfigError(override val msg: String)
-    extends SqlppError(msg) {
 
-    def this(causes: Seq[SqlppError]) {
-      this(SqlppError.formatErrors(causes))
-    }
-  }
-
-  class OutputTargetErrors(val causes: Seq[SqlppError])
-    extends ConfigError(causes)
 
   private def checkSource(source: File): Either[SqlppError, File] = {
     for {
