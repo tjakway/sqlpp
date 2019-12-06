@@ -6,7 +6,7 @@ import java.util.Properties
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.{OpenOutputWriterError, TemplateEngineException}
-import com.jakway.sqlpp.util.{MapToProperties, MergeMaps, MergeProperties}
+import com.jakway.sqlpp.util.{FileUtil, MapToProperties, MergeMaps, MergeProperties}
 import org.apache.velocity.Template
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.context.Context
@@ -73,14 +73,8 @@ trait TemplateEngine {
     writerMap.flatMap(multiApplyWriters(templateName, _))
   }
 
-  private def openOutput(file: File): Either[SqlppError, Writer] = {
-    Try(new BufferedWriter(
-      new OutputStreamWriter(
-        new FileOutputStream(file), encoding))) match {
-      case Success(x) => Right(x)
-      case Failure(t) => Left(new OpenOutputWriterError(t))
-    }
-  }
+  private def openOutput: File => Either[SqlppError, Writer] =
+    FileUtil.openWriter(encoding, new OpenOutputWriterError(_))
 }
 
 object TemplateEngine {
