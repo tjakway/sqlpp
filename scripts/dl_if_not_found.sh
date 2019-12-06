@@ -16,14 +16,16 @@ dl_if_not_found() {
     fi
 
     wget --continue \
-        -o "$DL_IF_NOT_FOUND_DEST" \
+        -O "$DL_IF_NOT_FOUND_DEST" \
         "$DL_IF_NOT_FOUND_URL"
 
     DL_IF_NOT_FOUND_WGET_RES="$?"
     if [ "$DL_IF_NOT_FOUND_WGET_RES" = "0" ]; then
         #TODO: use shasum's built-in checking behavior
         if [ "$DL_IF_NOT_FOUND_TARGET_HASH" != "NULL" ]; then
-            DL_IF_NOT_FOUND_SHASUM_RES=$(shasum -a 256 "$DL_IF_NOT_FOUND_DEST")
+            DL_IF_NOT_FOUND_SHASUM_RES=$( \
+                shasum -a 256 "$DL_IF_NOT_FOUND_DEST" | \
+                awk '{print $1}')
 
             #make sure the shasum invocation succeeded
             DL_IF_NOT_FOUND_SHASUM_EXIT_CODE="$?"
