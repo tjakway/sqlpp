@@ -4,9 +4,8 @@ import java.io.File
 import java.nio.charset.{Charset, StandardCharsets}
 
 import com.jakway.sqlpp.Backend
-import com.jakway.sqlpp.config.Config.{ConfigError, Defaults}
-import com.jakway.sqlpp.config.ConfigErrors.{InvalidLoaderTypesError, NoSourcePassedError}
-import com.jakway.sqlpp.config.error.ConfigError
+import com.jakway.sqlpp.config.Config.Defaults
+import com.jakway.sqlpp.config.error.{InvalidLoaderTypesError, NoSourcePassedError, OutputTargetErrors}
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import com.jakway.sqlpp.template.GeneralVelocityOptions
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType

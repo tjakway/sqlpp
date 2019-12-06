@@ -1,7 +1,7 @@
 package com.jakway.sqlpp.config
 
-import com.jakway.sqlpp.config.Config.ConfigError
 import com.jakway.sqlpp.config.PrioritizedPref.NoPrefFoundError
+import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.SqlppError
 
 class PrioritizedPref[A](val orderedGetters: Seq[() => Either[SqlppError, A]],
