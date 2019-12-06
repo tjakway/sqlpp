@@ -2,7 +2,7 @@ package com.jakway.sqlpp.config.unchecked
 
 import java.io.File
 
-import com.jakway.sqlpp.config.Config
+import com.jakway.sqlpp.config.checked.Config
 import com.jakway.sqlpp.config.error.{InvalidLoaderTypesError, NoSourcePassedError}
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
