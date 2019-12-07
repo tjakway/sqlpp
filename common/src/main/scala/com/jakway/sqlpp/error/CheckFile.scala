@@ -2,7 +2,7 @@ package com.jakway.sqlpp.error
 
 import java.io.File
 
-import com.jakway.sqlpp.error.CheckFile.FileError.{CannotReadError, CannotWriteError, FileDoesNotExistError, NotDirectoryError, NotFileError}
+import com.jakway.sqlpp.error.CheckFile.FileError.{CannotExecuteError, CannotReadError, CannotWriteError, FileDoesNotExistError, NotDirectoryError, NotFileError}
 
 object CheckFile {
   class FileError(override val msg: String)
@@ -24,6 +24,9 @@ object CheckFile {
 
     class CannotWriteError(override val f: File)
       extends OperationError(f, s"Cannot write to file $f")
+
+    class CannotExecuteError(override val f: File)
+      extends OperationError(f, s"Cannot execute $f")
 
     class UnexpectedFileTypeError(val f: File,
                                   val expectedType: String,
@@ -52,6 +55,7 @@ object CheckFile {
   def checkExists: FileCheckF = mkCheck(_.exists)(new FileDoesNotExistError(_))
   def checkReadable: FileCheckF = mkCheck(_.canRead)(new CannotReadError(_))
   def checkWriteable: FileCheckF = mkCheck(_.canWrite)(new CannotWriteError(_))
+  def checkExecutable: FileCheckF = mkCheck(_.canExecute)(new CannotExecuteError(_))
   def checkIsFile: FileCheckF = mkCheck(_.isFile)(new NotFileError(_))
   def checkIsDirectory: FileCheckF = mkCheck(_.isDirectory)(new NotDirectoryError(_))
 }
