@@ -1,10 +1,10 @@
 package com.jakway.sqlpp.config
 
-import com.jakway.sqlpp.config.PrioritizedPref.NoPrefFoundError
+import com.jakway.sqlpp.config.PrioritizedPref.{NoPrefFoundError, OrderedGetters}
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.SqlppError
 
-class PrioritizedPref[A](val orderedGetters: Seq[() => Either[SqlppError, A]],
+class PrioritizedPref[A](val orderedGetters: OrderedGetters[A],
                          val default: Option[A] = None) {
   def apply(): Either[SqlppError, A] = {
     val empty: (Seq[SqlppError], Option[A]) = (Seq.empty, None)
@@ -33,6 +33,11 @@ class PrioritizedPref[A](val orderedGetters: Seq[() => Either[SqlppError, A]],
 }
 
 object PrioritizedPref {
+  type OrderedGetters[A] = Seq[() => Either[SqlppError, A]]
+
   class NoPrefFoundError(val errors: Seq[SqlppError])
     extends ConfigError(errors)
+
+  class EmptyOptionError(override val msg: String)
+    extends ConfigError(msg)
 }
