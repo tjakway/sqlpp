@@ -19,18 +19,18 @@ object DataDir {
   class DataDirError(override val msg: String)
     extends ConfigError(msg)
 
-  def readDataDirEnvVariable: Either[SqlppError, File] =
+  private def readDataDirEnvVariable: Either[SqlppError, File] =
     SqlppSystemEnvReader
       .getPropertyF(dataDirVarName)
       .map(new File(_))
 
-  def readDataDirJavaProperty: Either[SqlppError, File] =
+  private def readDataDirJavaProperty: Either[SqlppError, File] =
     SqlppSystemPropertyReader
       .getPropertyF(dataDirVarName)
       .map(new File(_))
 
 
-  def readXdgConfigSubdir: Either[SqlppError, File] = {
+  private def readXdgConfigSubdir: Either[SqlppError, File] = {
     val xdgConfigHome = XdgConfigHome.get
 
     val configDir: Either[SqlppError, File] = {
@@ -54,13 +54,13 @@ object DataDir {
       .map(xdgConfigHome => new File(xdgConfigHome, xdgConfigSubdirName))
   }
 
-  def readHomeSubdir: Either[SqlppError, File] = {
+  private def readHomeSubdir: Either[SqlppError, File] = {
     UserHome
       .get
       .map(home => new File(home, homeSubdirName))
   }
 
-  def getPrioritiedPref(cliArg: Option[File]): PrioritizedPref[File] = {
+  private def getPrioritiedPref(cliArg: Option[File]): PrioritizedPref[File] = {
     def getCliArg: () => Either[SqlppError, File] = { () =>
       cliArg match {
         case Some(x) => Right(x)
