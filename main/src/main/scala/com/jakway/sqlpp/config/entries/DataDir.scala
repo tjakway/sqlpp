@@ -10,9 +10,7 @@ import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import org.slf4j.{Logger, LoggerFactory}
 
 object DataDir {
-  val dataDirVarName: String = "SQLPP_DIR"
-  val xdgConfigSubdirName: String = "sqlpp"
-  val homeSubdirName: String = ".sqlpp"
+  import com.jakway.sqlpp.config.Defaults.DataDir._
 
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 

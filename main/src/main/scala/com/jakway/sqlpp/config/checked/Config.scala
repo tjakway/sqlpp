@@ -18,11 +18,3 @@ case class Config(source: File,
   val additionalVelocityProperties: PropertyMap =
     GeneralVelocityOptions(inputEncoding)
 }
-
-object Config {
-  object Defaults {
-    val defaultEncoding: Charset = StandardCharsets.UTF_8
-    val allowOverwrite: Boolean = false
-    val extraTemplateOptions: ExtraTemplateOptions = ExtraTemplateOptions(Seq(), Seq())
-  }
-}
