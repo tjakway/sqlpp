@@ -1,16 +1,14 @@
 package com.jakway.sqlpp.config.checked
 
-import java.io.File
-import java.nio.charset.{Charset, StandardCharsets}
+import java.io.InputStream
 
 import com.jakway.sqlpp.config.OutputTarget
 import com.jakway.sqlpp.template.GeneralVelocityOptions
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.{ExtraTemplateOptions, PropertyMap}
 
-case class Config(source: File,
+case class Config(source: InputStream,
                   outputTargets: Seq[OutputTarget],
-                  allowOverwrite: Boolean,
                   inputEncoding: String,
                   resourceLoaderTypes: Set[LoaderType],
                   extraTemplateOptions: ExtraTemplateOptions) {
