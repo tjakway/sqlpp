@@ -4,7 +4,7 @@ import java.io.File
 
 import com.jakway.sqlpp.config
 import com.jakway.sqlpp.config.PrioritizedPref
-import com.jakway.sqlpp.config.env.{SqlppSystemEnvReader, SqlppSystemPropertyReader, XdgConfigHome}
+import com.jakway.sqlpp.config.env.{SqlppSystemEnvReader, SqlppSystemPropertyReader, UserHome, XdgConfigHome}
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import org.slf4j.{Logger, LoggerFactory}
@@ -12,6 +12,7 @@ import org.slf4j.{Logger, LoggerFactory}
 object DataDir {
   val dataDirVarName: String = "SQLPP_DIR"
   val xdgConfigSubdirName: String = "sqlpp"
+  val homeSubdirName: String = ".sqlpp"
 
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -53,6 +54,12 @@ object DataDir {
       .map(xdgConfigHome => new File(xdgConfigHome, xdgConfigSubdirName))
   }
 
+  def readHomeSubdir: Either[SqlppError, File] = {
+    UserHome
+      .get
+      .map(home => new File(home, homeSubdirName))
+  }
+
   def getPrioritiedPref(cliArg: Option[File]): PrioritizedPref[File] = {
     def getCliArg: () => Either[SqlppError, File] = { () =>
       cliArg match {
@@ -66,7 +73,8 @@ object DataDir {
       getCliArg,
       () => readDataDirJavaProperty,
       () => readDataDirEnvVariable,
-      () => readXdgConfigSubdir
+      () => readXdgConfigSubdir,
+      () => readHomeSubdir
     )
 
     new PrioritizedPref[File](orderedGetters)
