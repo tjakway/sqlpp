@@ -12,8 +12,6 @@ import org.slf4j.{Logger, LoggerFactory}
 object DataDir {
   import com.jakway.sqlpp.config.Defaults.DataDir._
 
-  private val logger: Logger = LoggerFactory.getLogger(getClass)
-
   class DataDirError(override val msg: String)
     extends ConfigError(msg)
 
