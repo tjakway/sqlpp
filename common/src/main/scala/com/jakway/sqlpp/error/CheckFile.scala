@@ -2,7 +2,9 @@ package com.jakway.sqlpp.error
 
 import java.io.File
 
-import com.jakway.sqlpp.error.CheckFile.FileError.{CannotExecuteError, CannotReadError, CannotWriteError, FileDoesNotExistError, NotDirectoryError, NotFileError}
+import com.jakway.sqlpp.error.CheckFile.FileError.{CannotExecuteError, CannotReadError, CannotWriteError, ExceptionThrownDuringOperationError, FileDoesNotExistError, MkdirError, NotDirectoryError, NotFileError}
+
+import scala.util.{Failure, Success, Try}
 
 object CheckFile {
   class FileError(override val msg: String)
@@ -18,6 +20,11 @@ object CheckFile {
     class OperationError(val f: File,
                          override val msg: String)
       extends FileError(msg)
+
+    class ExceptionThrownDuringOperationError(override val f: File,
+                                              val throwable: Throwable)
+      extends OperationError(f,
+        s"Caught throwable: " + SqlppError.formatThrowable(throwable))
 
     class CannotReadError(override val f: File)
       extends OperationError(f, s"Cannot read file $f")
@@ -38,6 +45,42 @@ object CheckFile {
 
     class NotDirectoryError(override val f: File)
       extends UnexpectedFileTypeError(f, "a directory", "a file")
+
+    class MkdirError(override val f: File)
+      extends OperationError(f, s"$f.mkdir returned false")
+
+    class SetPermissionError(override val f: File,
+                             val setTo: Boolean,
+                             val permissionVerb: String)
+      extends OperationError(f,
+        SetPermissionError.formatMsg(f, setTo, permissionVerb))
+
+    object SetPermissionError {
+      private def formatMsg(f: File,
+                            setTo: Boolean,
+                            permissionVerb: String): String = {
+        val permString: String =
+          if(setTo) {
+            ""
+          } else {
+            "non "
+          }
+
+        s"Could not set f to $permString$permissionVerb"
+      }
+
+      class SetReadableError(override val f: File,
+                             override val setTo: Boolean)
+        extends SetPermissionError(f, setTo, "readable")
+
+      class SetWritableError(override val f: File,
+                              override val setTo: Boolean)
+        extends SetPermissionError(f, setTo, "writeable")
+
+      class SetExecutableError(override val f: File,
+                               override val setTo: Boolean)
+        extends SetPermissionError(f, setTo, "executable")
+    }
   }
 
   type FileCheckF = File => Either[SqlppError, Unit]
@@ -54,8 +97,38 @@ object CheckFile {
 
   def checkExists: FileCheckF = mkCheck(_.exists)(new FileDoesNotExistError(_))
   def checkReadable: FileCheckF = mkCheck(_.canRead)(new CannotReadError(_))
-  def checkWriteable: FileCheckF = mkCheck(_.canWrite)(new CannotWriteError(_))
+  def checkWritable: FileCheckF = mkCheck(_.canWrite)(new CannotWriteError(_))
   def checkExecutable: FileCheckF = mkCheck(_.canExecute)(new CannotExecuteError(_))
   def checkIsFile: FileCheckF = mkCheck(_.isFile)(new NotFileError(_))
   def checkIsDirectory: FileCheckF = mkCheck(_.isDirectory)(new NotDirectoryError(_))
+
+  private def operationReturnsBoolean(op: File => Boolean)
+                                     (ifFalse: File => SqlppError): FileCheckF = f => {
+    Try(op(f)) match {
+      case Success(x) => {
+        //op returns true on success, false on failure
+        if(x) {
+          Right({})
+        } else {
+          Left(ifFalse(f))
+        }
+      }
+      case Failure(t) => Left(
+        new ExceptionThrownDuringOperationError(f, t))
+    }
+  }
+
+  import com.jakway.sqlpp.error.CheckFile.FileError.SetPermissionError._
+
+  def mkDir: FileCheckF = operationReturnsBoolean(_.mkdir())(new MkdirError(_))
+
+  def setReadable(b: Boolean): FileCheckF =
+    operationReturnsBoolean(_.setReadable(b))(new SetReadableError(_, b))
+
+  def setWritable(b: Boolean): FileCheckF =
+    operationReturnsBoolean(_.setWritable(b))(new SetWritableError(_, b))
+
+  def setExecutable(b: Boolean): FileCheckF =
+    operationReturnsBoolean(_.setExecutable(b))(new SetExecutableError(_, b))
+
 }
