@@ -29,6 +29,9 @@ object CheckFile {
     object ExceptionThrownDuringOperationError {
       def apply(f: File, t: Throwable): ExceptionThrownDuringOperationError =
         new ExceptionThrownDuringOperationError(f, t)
+
+      def applyCurried: File => Throwable => ExceptionThrownDuringOperationError =
+        (apply _).curried
     }
 
     class CannotReadError(override val f: File)
@@ -151,7 +154,7 @@ object CheckFile {
 
   def openWriter(open: File => Writer,
                  onError: File => Throwable => SqlppError =
-                    ExceptionThrownDuringOperationError.apply _)
+                    (ExceptionThrownDuringOperationError.apply _).curried)
                 (f: File): Either[SqlppError, Writer] = {
     Try(open(f)) match {
       case Success(x) => Right(x)
