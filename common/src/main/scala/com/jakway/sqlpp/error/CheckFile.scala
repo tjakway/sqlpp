@@ -102,9 +102,18 @@ object CheckFile {
   def checkIsFile: FileCheckF = mkCheck(_.isFile)(new NotFileError(_))
   def checkIsDirectory: FileCheckF = mkCheck(_.isDirectory)(new NotDirectoryError(_))
 
-  private def operationReturnsBoolean(op: File => Boolean)
+  private def operationReturnsBoolean(idempotentCondition: File => Boolean,
+                                      op: File => Boolean)
                                      (ifFalse: File => SqlppError): FileCheckF = f => {
-    Try(op(f)) match {
+    val tryRes = Try {
+      if(idempotentCondition(f)) {
+        true
+      } else {
+        op(f)
+      }
+    }
+
+    tryRes match {
       case Success(x) => {
         //op returns true on success, false on failure
         if(x) {
@@ -120,15 +129,19 @@ object CheckFile {
 
   import com.jakway.sqlpp.error.CheckFile.FileError.SetPermissionError._
 
-  def mkDir: FileCheckF = operationReturnsBoolean(_.mkdir())(new MkdirError(_))
+  def mkDir: FileCheckF = operationReturnsBoolean(_.isDirectory, _.mkdir())(
+    new MkdirError(_))
 
   def setReadable(b: Boolean): FileCheckF =
-    operationReturnsBoolean(_.setReadable(b))(new SetReadableError(_, b))
+    operationReturnsBoolean(_.canRead, _.setReadable(b))(
+      new SetReadableError(_, b))
 
   def setWritable(b: Boolean): FileCheckF =
-    operationReturnsBoolean(_.setWritable(b))(new SetWritableError(_, b))
+    operationReturnsBoolean(_.canWrite, _.setWritable(b))(
+      new SetWritableError(_, b))
 
   def setExecutable(b: Boolean): FileCheckF =
-    operationReturnsBoolean(_.setExecutable(b))(new SetExecutableError(_, b))
+    operationReturnsBoolean(_.canExecute, _.setExecutable(b))(
+      new SetExecutableError(_, b))
 
 }
