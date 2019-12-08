@@ -39,6 +39,8 @@ object ValidateConfig {
     }
   }
 
+  /*
+  TODO
   def check(config: Config): Either[SqlppError, Config] = {
     //TODO: more user-friendly error printing
 
@@ -51,4 +53,5 @@ object ValidateConfig {
         .copy(outputTargets = checkedOutputTargets)
     }
   }
+   */
 }
