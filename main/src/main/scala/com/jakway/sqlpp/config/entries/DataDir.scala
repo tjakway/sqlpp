@@ -78,8 +78,38 @@ object DataDir {
     new PrioritizedPref[File](orderedGetters)
   }
 
-  def get(cliArg: Option[File]): Either[SqlppError, File] = {
-    getPrioritiedPref(cliArg)()
+  object CheckDir {
+    private def checkDataDir(d: File): Either[SqlppError, File] = {
+      for {
+        _ <- CheckFile.checkExists(d)
+        _ <- CheckFile.checkIsDirectory(d)
+        _ <- CheckFile.checkReadable(d)
+        _ <- CheckFile.checkWritable(d)
+        _ <- CheckFile.checkExecutable(d)
+      } yield { d }
+    }
+
+    private def checkOrMakeDir(d: File): Either[SqlppError, File] = {
+      for {
+        _ <- CheckFile.mkDir(d)
+        _ <- CheckFile.setReadable(true)(d)
+        _ <- CheckFile.setWritable(true)(d)
+        _ <- CheckFile.setExecutable(true)(d)
+      } yield { d }
+    }
+
+    def apply(d: File): Either[SqlppError, File] = {
+      checkOrMakeDir(d)
+        .flatMap(checkDataDir)
+    }
   }
 
+
+
+
+  def get(cliArg: Option[File]): Either[SqlppError, File] = {
+    getPrioritiedPref(cliArg)()
+      //check the chosen dir before returning
+      .flatMap(CheckDir.apply)
+  }
 }
