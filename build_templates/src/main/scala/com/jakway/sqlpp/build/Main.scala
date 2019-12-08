@@ -95,7 +95,7 @@ object Main {
     for {
       _ <- CheckFile.checkExists(out)
       _ <- CheckFile.checkIsDirectory(out)
-      _ <- CheckFile.checkWriteable(out)
+      _ <- CheckFile.checkWritable(out)
     } yield {}
   }
 
