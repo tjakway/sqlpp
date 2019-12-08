@@ -104,9 +104,6 @@ object DataDir {
     }
   }
 
-
-
-
   def get(cliArg: Option[File]): Either[SqlppError, File] = {
     getPrioritiedPref(cliArg)()
       //check the chosen dir before returning
