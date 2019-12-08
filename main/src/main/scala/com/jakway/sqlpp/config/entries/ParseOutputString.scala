@@ -6,7 +6,7 @@ import com.jakway.sqlpp.error.{CheckString, SqlppError}
 
 import scala.util.matching.Regex
 
-object ParseOutputString {
+class ParseOutputString(val encoding: String) {
   lazy val outputStringRegex: Regex = {
     val unescapedPercentSRegex: String = "(?<!\\\\)%s"
     val matchAnything: String = ".*"
@@ -39,7 +39,7 @@ object ParseOutputString {
           s"format symbol < %s > to appear" +
           s" at least once in output string $s "))
       } else {
-        Right(new OutputString(s))
+        Right(new OutputString(encoding)(s))
       }
     }
   }
