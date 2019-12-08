@@ -1,6 +1,6 @@
 package com.jakway.sqlpp.error
 
-import java.io.File
+import java.io.{File, Writer}
 
 import com.jakway.sqlpp.error.CheckFile.FileError.{CannotExecuteError, CannotReadError, CannotWriteError, ExceptionThrownDuringOperationError, FileDoesNotExistError, MkdirError, NotDirectoryError, NotFileError}
 
@@ -25,6 +25,11 @@ object CheckFile {
                                               val throwable: Throwable)
       extends OperationError(f,
         s"Caught throwable: " + SqlppError.formatThrowable(throwable))
+
+    object ExceptionThrownDuringOperationError {
+      def apply(f: File, t: Throwable): ExceptionThrownDuringOperationError =
+        new ExceptionThrownDuringOperationError(f, t)
+    }
 
     class CannotReadError(override val f: File)
       extends OperationError(f, s"Cannot read file $f")
@@ -143,5 +148,15 @@ object CheckFile {
   def setExecutable(b: Boolean): FileCheckF =
     operationReturnsBoolean(_.canExecute, _.setExecutable(b))(
       new SetExecutableError(_, b))
+
+  def openWriter(open: File => Writer,
+                 onError: File => Throwable => SqlppError =
+                    ExceptionThrownDuringOperationError.apply _)
+                (f: File): Either[SqlppError, Writer] = {
+    Try(open(f)) match {
+      case Success(x) => Right(x)
+      case Failure(t) => Left(onError(f)(t))
+    }
+  }
 
 }

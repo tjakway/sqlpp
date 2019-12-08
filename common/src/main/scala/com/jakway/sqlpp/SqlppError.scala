@@ -29,4 +29,9 @@ object SqlppError {
     //TODO: print stack trace, etc.
     t.toString
   }
+
+  def formatThrowableCause(t: Throwable): String = {
+    //TODO
+    t.toString
+  }
 }
