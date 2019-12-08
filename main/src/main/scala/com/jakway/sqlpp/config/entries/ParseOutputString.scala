@@ -1,5 +1,6 @@
 package com.jakway.sqlpp.config.entries
 
+import com.jakway.sqlpp.config.OutputString
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.SqlppError
 
@@ -30,7 +31,7 @@ object ParseOutputString {
     s.trim.isEmpty || s.forall(_.isWhitespace)
 
   def apply(s: String,
-            requireFormatSymbol: Boolean): Either[SqlppError, String] = {
+            requireFormatSymbol: Boolean): Either[SqlppError, OutputString] = {
     if(stringIsEmpty(s)) {
       Left(EmptyFormatStringError)
     } else {
@@ -42,7 +43,7 @@ object ParseOutputString {
           s"format symbol < %s > to appear" +
           s" at least once in output string $s "))
       } else {
-        Right(s)
+        Right(new OutputString(s))
       }
     }
   }
