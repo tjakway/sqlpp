@@ -1,9 +1,8 @@
 package com.jakway.sqlpp.config
 
-import java.io.{BufferedWriter, File, FileOutputStream, OutputStreamWriter, Writer}
+import java.io._
 import java.util.{Formatter, Locale}
 
-import com.jakway.sqlpp.Backend
 import com.jakway.sqlpp.config.OutputString.{OutputStringFormatError, OutputStringFormatException, OutputStringOpenWriterError}
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.{CheckFile, CheckString, SqlppError}
@@ -87,13 +86,13 @@ class OutputString(val outputCharset: String)
             Right(acc.updated(thisBackend, outWriter))
 
             //on error, close the open writers before returning
-          case e@Left(_) => {
+          case Left(e) => {
             acc.foreach {
               case (backend, writer) =>
                 TryClose(writer, Some(s"writer for backend $backend"))
             }
 
-            e
+            Left(e)
           }
         }
       }

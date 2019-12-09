@@ -2,13 +2,13 @@ package com.jakway.sqlpp.config
 
 import java.io.{BufferedWriter, File, OutputStreamWriter, Writer}
 
-import com.jakway.sqlpp.Backend
 import com.jakway.sqlpp.config.OutputTarget.OpenWriterError
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.SqlppError
+import com.jakway.sqlpp.template.Backend
 import com.jakway.sqlpp.util.FileUtil
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 abstract class OutputTarget(val backend: Backend) {
   def getWriter(encoding: String): Either[SqlppError, Writer]
