@@ -3,10 +3,12 @@ package com.jakway.sqlpp.config
 import java.io.{BufferedWriter, File, FileOutputStream, OutputStreamWriter, Writer}
 import java.util.{Formatter, Locale}
 
+import com.jakway.sqlpp.Backend
 import com.jakway.sqlpp.config.OutputString.{OutputStringFormatError, OutputStringFormatException, OutputStringOpenWriterError}
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.{CheckFile, CheckString, SqlppError}
-import com.jakway.sqlpp.util.TryToEither
+import com.jakway.sqlpp.template.Backend
+import com.jakway.sqlpp.util.{TryClose, TryToEither}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.Try
@@ -65,6 +67,36 @@ class OutputString(val outputCharset: String)
       res <- getWriter(outFile)
     } yield {
       res
+    }
+  }
+
+  def apply(backend: Backend): Either[SqlppError, Writer] = {
+    backend.toOutputStringName.flatMap(apply)
+  }
+
+  def permutateBackendDests(backends: Seq[Backend]):
+    Either[SqlppError, Map[Backend, Writer]] = {
+
+    val empty: Either[SqlppError, Map[Backend, Writer]] =
+      Right(Map.empty)
+
+    backends.foldLeft(empty) {
+      case (eAcc, thisBackend) => eAcc.flatMap { acc =>
+        apply(thisBackend) match {
+          case Right(outWriter) =>
+            Right(acc.updated(thisBackend, outWriter))
+
+            //on error, close the open writers before returning
+          case e@Left(_) => {
+            acc.foreach {
+              case (backend, writer) =>
+                TryClose(writer, Some(s"writer for backend $backend"))
+            }
+
+            e
+          }
+        }
+      }
     }
   }
 }
