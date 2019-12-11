@@ -1,12 +1,12 @@
 package com.jakway.sqlpp.config.entries
 
-import com.jakway.sqlpp.config.OutputString
+import com.jakway.sqlpp.config.OutputPattern
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.{CheckString, SqlppError}
 
 import scala.util.matching.Regex
 
-class ParseOutputString(val encoding: String) {
+class ParseOutputPattern(val encoding: String) {
   lazy val outputStringRegex: Regex = {
     val unescapedPercentSRegex: String = "(?<!\\\\)%s"
     val matchAnything: String = ".*"
@@ -14,11 +14,11 @@ class ParseOutputString(val encoding: String) {
     new Regex(matchAnything + unescapedPercentSRegex + matchAnything)
   }
 
-  class ParseOutputStringError(override val msg: String)
+  class ParseOutputPatternError(override val msg: String)
     extends ConfigError(msg)
 
   class BadFormatStringError(override val msg: String)
-    extends ConfigError(msg)
+    extends ParseOutputPatternError(msg)
 
   object EmptyFormatStringError
     extends BadFormatStringError("Passed format string was empty")
@@ -27,7 +27,7 @@ class ParseOutputString(val encoding: String) {
     extends BadFormatStringError(msg)
 
   def apply(s: String,
-            requireFormatSymbol: Boolean): Either[SqlppError, OutputString] = {
+            requireFormatSymbol: Boolean): Either[SqlppError, OutputPattern] = {
     if(CheckString.isEmpty(s)) {
       Left(EmptyFormatStringError)
     } else {
@@ -39,7 +39,7 @@ class ParseOutputString(val encoding: String) {
           s"format symbol < %s > to appear" +
           s" at least once in output string $s "))
       } else {
-        Right(new OutputString(encoding)(s))
+        Right(new OutputPattern(encoding)(s))
       }
     }
   }
