@@ -3,11 +3,11 @@ package com.jakway.sqlpp.config
 import java.io._
 import java.util.{Formatter, Locale}
 
-import com.jakway.sqlpp.config.OutputPattern.{OutputPatternFormatError, OutputPatternFormatException, OutputPatternOpenWriterError}
+import com.jakway.sqlpp.config.OutputPattern.{OutputPatternError, OutputPatternFormatError, OutputPatternFormatException, OutputPatternOpenWriterError}
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.{CheckFile, CheckString, SqlppError}
 import com.jakway.sqlpp.template.Backend
-import com.jakway.sqlpp.util.{TryClose, TryToEither}
+import com.jakway.sqlpp.util.{FileUtil, TryClose, TryToEither}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.Try
@@ -57,7 +57,7 @@ class OutputPattern(val outputCharset: String)
     }
   }
 
-  def apply(in: String): Either[SqlppError, Writer] = {
+  protected def apply(in: String): Either[SqlppError, Writer] = {
     for {
       substitutedString <- substituteName(in)
       _ <- checkSubstitutedString(substitutedString)
@@ -69,7 +69,7 @@ class OutputPattern(val outputCharset: String)
     }
   }
 
-  def apply(backend: Backend): Either[SqlppError, Writer] = {
+  protected def apply(backend: Backend): Either[SqlppError, Writer] = {
     backend.toOutputStringName.flatMap(apply)
   }
 
@@ -98,6 +98,31 @@ class OutputPattern(val outputCharset: String)
       }
     }
   }
+}
+
+class StdoutOutputPattern(override val outputCharset: String)
+  extends OutputPattern(outputCharset)(StdoutOutputPattern.dashPattern) {
+  import StdoutOutputPattern.StdoutOutputPatternOpenWriterError
+
+  protected def getStdoutWriter: Either[SqlppError, Writer] =
+    FileUtil.openPrintStreamWriter[SqlppError](
+      outputCharset,
+      new StdoutOutputPatternOpenWriterError(_))(
+      System.out)
+
+  override protected def apply(in: String): Either[SqlppError, Writer] = {
+    getStdoutWriter
+  }
+
+  override protected def apply(backend: Backend): Either[SqlppError, Writer] = {
+    getStdoutWriter
+  }
+}
+
+object StdoutOutputPattern {
+  val dashPattern = "-"
+  class StdoutOutputPatternOpenWriterError(override val throwable: Throwable)
+    extends OutputPattern.OutputPatternOpenWriterError(throwable)
 }
 
 object OutputPattern {
