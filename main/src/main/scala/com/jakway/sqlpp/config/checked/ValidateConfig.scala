@@ -2,8 +2,8 @@ package com.jakway.sqlpp.config.checked
 
 import java.io.File
 
-import com.jakway.sqlpp.config.OutputTarget
 import com.jakway.sqlpp.config.error.OutputTargetErrors
+import com.jakway.sqlpp.config.output.OutputTarget
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 
 object ValidateConfig {

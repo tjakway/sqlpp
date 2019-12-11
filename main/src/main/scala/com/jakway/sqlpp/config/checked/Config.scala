@@ -2,7 +2,7 @@ package com.jakway.sqlpp.config.checked
 
 import java.io.InputStream
 
-import com.jakway.sqlpp.config.OutputTarget
+import com.jakway.sqlpp.config.output.OutputTarget
 import com.jakway.sqlpp.template.GeneralVelocityOptions
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.{ExtraTemplateOptions, PropertyMap}

@@ -1,9 +1,9 @@
-package com.jakway.sqlpp.config
+package com.jakway.sqlpp.config.output
 
 import java.io.{BufferedWriter, File, OutputStreamWriter, Writer}
 
-import com.jakway.sqlpp.config.OutputTarget.OpenWriterError
 import com.jakway.sqlpp.config.error.ConfigError
+import com.jakway.sqlpp.config.output.OutputTarget.OpenWriterError
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.Backend
 import com.jakway.sqlpp.util.FileUtil

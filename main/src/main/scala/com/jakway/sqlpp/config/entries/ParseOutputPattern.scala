@@ -1,7 +1,7 @@
 package com.jakway.sqlpp.config.entries
 
-import com.jakway.sqlpp.config.OutputPattern
 import com.jakway.sqlpp.config.error.ConfigError
+import com.jakway.sqlpp.config.output.OutputPattern
 import com.jakway.sqlpp.error.{CheckString, SqlppError}
 
 import scala.util.matching.Regex
