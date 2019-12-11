@@ -1,6 +1,7 @@
 package com.jakway.sqlpp.config.test
 
 import com.jakway.sqlpp.config.entries.ParseOutputPattern
+import com.jakway.sqlpp.config.output.StdoutOutputPattern
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.propspec.AnyPropSpec
@@ -16,7 +17,17 @@ class ParseOutputPatternProperties
     forAll(ParseOutputPatternProperties
       .GenParseOutputPatternTest
       .genParseDashTest) { test =>
-      true
+
+      new ParseOutputPattern(test.encoding)
+        .apply(test.toParse, test.requireFormatSymbol) match {
+          case Right(x) => {
+            x match {
+              case _: StdoutOutputPattern => true
+              case _ => false
+            }
+          }
+          case _ => false
+      }
     }
   }
 }
