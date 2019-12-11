@@ -2,12 +2,14 @@ package com.jakway.sqlpp.config.output
 
 import java.io.Writer
 
+import com.jakway.sqlpp.config.entries.ParseOutputPattern
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.Backend
 import com.jakway.sqlpp.util.FileUtil
 
 class StdoutOutputPattern(override val outputCharset: String)
-  extends OutputPattern(outputCharset)(StdoutOutputPattern.dashPattern) {
+  extends OutputPattern(outputCharset)(
+    ParseOutputPattern.stdoutSpecialChar.toString) {
   import StdoutOutputPattern.StdoutOutputPatternOpenWriterError
 
   protected def getStdoutWriter: Either[SqlppError, Writer] =
@@ -26,7 +28,6 @@ class StdoutOutputPattern(override val outputCharset: String)
 }
 
 object StdoutOutputPattern {
-  val dashPattern = "-"
   class StdoutOutputPatternOpenWriterError(override val throwable: Throwable)
     extends OutputPattern.OutputPatternOpenWriterError(throwable)
 }
