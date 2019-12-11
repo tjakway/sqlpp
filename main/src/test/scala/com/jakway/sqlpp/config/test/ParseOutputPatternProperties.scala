@@ -18,16 +18,10 @@ class ParseOutputPatternProperties
       .GenParseOutputPatternTest
       .genParseDashTest) { test =>
 
-      new ParseOutputPattern(test.encoding)
-        .apply(test.toParse, test.requireFormatSymbol) match {
-          case Right(x) => {
-            x match {
-              case _: StdoutOutputPattern => true
-              case _ => false
-            }
-          }
-          case _ => false
-      }
+      val res = new ParseOutputPattern(test.encoding)
+        .apply(test.toParse, test.requireFormatSymbol)
+
+      res should be ('right)
     }
   }
 }
@@ -38,9 +32,14 @@ object ParseOutputPatternProperties {
                                val toParse: String)
 
   object GenParseOutputPatternTest {
-    private def apply(genToParse: Gen[String]): Gen[ParseOutputPatternTest] = {
+    private val defaultGenRequireFormatSymbol: Gen[Boolean] =
+      Arbitrary.arbBool.arbitrary
+
+    private def apply(genToParse: Gen[String],
+                      genRequireFormatSymbol: Gen[Boolean] =
+                        defaultGenRequireFormatSymbol): Gen[ParseOutputPatternTest] = {
       TestConfig.genEncoding.flatMap { encoding =>
-        Arbitrary.arbBool.arbitrary.flatMap { requireFormatSymbol =>
+        genRequireFormatSymbol.flatMap { requireFormatSymbol =>
           genToParse.map { toParse =>
             new ParseOutputPatternTest(encoding, requireFormatSymbol, toParse)
           }
@@ -67,7 +66,7 @@ object ParseOutputPatternProperties {
     }
 
     val genParseDashTest: Gen[ParseOutputPatternTest] = {
-      apply(genDashString)
+      apply(genDashString, GenUtil.const(false))
     }
   }
 }
