@@ -21,8 +21,8 @@ class ParseOutputPatternProperties
       val res = new ParseOutputPattern(test.encoding)
         .apply(test.toParse, test.requireFormatSymbol)
 
-      res.map(x => x.isInstanceOf[StdoutOutputPattern])
-      res shouldEqual Right(true)
+      res.map(x => x.isInstanceOf[StdoutOutputPattern]) shouldEqual
+        Right(true)
     }
   }
 }
