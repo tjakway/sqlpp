@@ -4,10 +4,21 @@ import com.jakway.sqlpp.config.entries.ParseOutputPattern
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.propspec.AnyPropSpec
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+
 
 class ParseOutputPatternProperties
   extends AnyPropSpec
     with Matchers {
+  import ScalaCheckPropertyChecks._
+
+  property("Parse dash to indicate write to stdout") {
+    forAll(ParseOutputPatternProperties
+      .GenParseOutputPatternTest
+      .genParseDashTest) { test =>
+      true
+    }
+  }
 }
 
 object ParseOutputPatternProperties {
