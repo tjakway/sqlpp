@@ -5,6 +5,8 @@ object CheckString {
     s.trim.isEmpty || s.forall(_.isWhitespace)
   }
 
+  def isNonEmpty: String => Boolean = !isEmpty(_)
+
   type StringCheckF = (String => SqlppError) =>
                         String =>
                         Either[SqlppError, Unit]

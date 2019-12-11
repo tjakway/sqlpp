@@ -1,7 +1,7 @@
 package com.jakway.sqlpp.config.entries
 
 import com.jakway.sqlpp.config.error.ConfigError
-import com.jakway.sqlpp.config.output.OutputPattern
+import com.jakway.sqlpp.config.output.{OutputPattern, StdoutOutputPattern}
 import com.jakway.sqlpp.error.{CheckString, SqlppError}
 
 import scala.util.matching.Regex
@@ -19,23 +19,39 @@ class ParseOutputPattern(val encoding: String) {
   class NoFormatSymbolError(override val msg: String)
     extends BadFormatStringError(msg)
 
+  private def regexMatches(r: Regex, s: String): Boolean = {
+    r.findFirstIn(s).isDefined
+  }
+
   def apply(s: String,
             requireFormatSymbol: Boolean): Either[SqlppError, OutputPattern] = {
-    if(CheckString.isEmpty(s)) {
-      Left(EmptyFormatStringError)
-    } else {
-      //make sure the argument contains a format symbol if it needs one
-      if(requireFormatSymbol
-        && ParseOutputPattern
-            .outputStringRegex
-            .findFirstIn(s).isEmpty) {
+    def standardOutputPattern =
+      Right(new OutputPattern(encoding)(s))
 
-        Left(new NoFormatSymbolError(s"Expected an unescaped " +
-          s"format symbol < %s > to appear" +
-          s" at least once in output string $s "))
+    def stdoutOutputPattern =
+      Right(new StdoutOutputPattern(encoding))
+
+    //always reject empty strings
+    if(CheckString.isNonEmpty(s)) {
+      //handle the "write to stdout" regex, i.e. the dash
+      if(regexMatches(ParseOutputPattern.stdoutSpecialRegex, s)) {
+        stdoutOutputPattern
       } else {
-        Right(new OutputPattern(encoding)(s))
+        //make sure the argument contains a format symbol if it needs one
+        if(requireFormatSymbol) {
+          if(regexMatches(ParseOutputPattern.outputStringRegex, s)) {
+            standardOutputPattern
+          } else {
+            Left(new NoFormatSymbolError(s"Expected an unescaped " +
+              s"format symbol < %s > to appear" +
+              s" at least once in output string $s "))
+          }
+        } else {
+          standardOutputPattern
+        }
       }
+    } else {
+      Left(EmptyFormatStringError)
     }
   }
 }
