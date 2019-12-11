@@ -11,10 +11,12 @@ package sqlpp.project {
     val testing = Seq(
         //scalatest
         //see http://www.scalatest.org/install
-        "org.scalatest" %% "scalatest" % "3.0.4" % "test",
-        "org.scalactic" %% "scalactic" % "3.0.4" % "test",
+        "org.scalatest" % "scalatest-flatspec_2.12" % "3.2.0-M2" % "test",
+        "org.scalatest" % "scalatest-shouldmatchers_2.12" % "3.2.0-M2" % "test",
+        "org.scalatest" % "scalatest-propspec_2.12" % "3.2.0-M2" % "test",
+        "org.scalactic" % "scalactic_2.12" % "3.2.0-M2" % "test",
 
-        "org.scalacheck" %% "scalacheck" % "1.14.0" % "test")
+        "org.scalacheck" %% "scalacheck" % "1.14.2" % "test")
 
     val apacheVelocity = Seq(
       "org.apache.velocity" % "velocity-engine-core" % "2.1")
