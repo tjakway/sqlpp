@@ -140,6 +140,19 @@ object CheckFile {
   def mkDir: FileCheckF = operationReturnsBoolean(_.isDirectory, _.mkdir())(
     new MkdirError(_))
 
+  sealed case class FilePermissions(readable: Boolean,
+                                    writable: Boolean,
+                                    executable: Boolean) {
+
+    def applyPermissions(to: File): Either[SqlppError, Unit] = {
+      for {
+        _ <- CheckFile.setReadable(readable)(to)
+        _ <- CheckFile.setWritable(writable)(to)
+        _ <- CheckFile.setExecutable(executable)(to)
+      } yield {}
+    }
+  }
+
   def setReadable(b: Boolean): FileCheckF =
     operationReturnsBoolean(_.canRead, _.setReadable(b))(
       new SetReadableError(_, b))
