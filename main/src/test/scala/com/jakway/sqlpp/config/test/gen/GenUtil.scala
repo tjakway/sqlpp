@@ -1,4 +1,4 @@
-package com.jakway.sqlpp.config.test
+package com.jakway.sqlpp.config.test.gen
 
 import org.scalacheck.{Arbitrary, Gen}
 

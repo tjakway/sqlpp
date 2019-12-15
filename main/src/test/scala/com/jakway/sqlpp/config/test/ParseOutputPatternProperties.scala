@@ -2,6 +2,7 @@ package com.jakway.sqlpp.config.test
 
 import com.jakway.sqlpp.config.entries.ParseOutputPattern
 import com.jakway.sqlpp.config.output.StdoutOutputPattern
+import com.jakway.sqlpp.config.test.gen.GenUtil
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.propspec.AnyPropSpec
