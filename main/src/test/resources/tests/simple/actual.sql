@@ -1,1 +1,0 @@
-CREATE TABLE People(id INDEX_TYPE, name TEXT_TYPE, address TEXT_TYPE, )
