@@ -118,6 +118,21 @@ object ParseTest {
     zero.toString
   }
 
+  private def normalize(test: TemplateEngineTestSet): TemplateEngineTestSet = {
+    val normalizedResults = test.expectedResults.mapValues(normalize)
+
+    new TemplateEngineTestSet(test.settings)(
+      normalize(test.input), normalizedResults)
+  }
+
+  private def normalize(test: TemplateEngineTestSet, flag: Boolean): TemplateEngineTestSet = {
+    if(flag) {
+      normalize(test)
+    } else {
+      test
+    }
+  }
+
   object Errors {
     class ParseTestError(override val msg: String)
       extends SqlppError(msg)
@@ -133,7 +148,7 @@ object ParseTest {
       extends ElementError(s"Expected $expected but got $actual")
   }
 
-  object ParseDocument {
+  private object ParseDocument {
     val defaultNormalizeTestWhitespaceAttribute: Boolean = false
 
     def parseNormalizeTestWhitespaceAttribute(root: Element):
@@ -283,6 +298,10 @@ object ParseTest {
     val document = documentBuilder.parse(testLocation)
 
     ParseDocument(document)
+      //handle normalizeTestResults flag
+      .map { res =>
+        normalize(res, res.settings.normalized)
+      }
   }
 
   def readTest(testLocation: InputSource,
