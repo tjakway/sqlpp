@@ -1,27 +1,91 @@
 package com.jakway.sqlpp.config.test.template
 
 import com.jakway.sqlpp.config.test.template.ParseTest.Errors.{AttributeError, ElementError, UnexpectedElementError}
-import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.{BackendName, BackendResult}
+import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.{BackendName, BackendResult, RequiredBackendError}
 import com.jakway.sqlpp.error.SqlppError
+import com.jakway.sqlpp.template.Backend
 import javax.xml.parsers.DocumentBuilderFactory
+import org.slf4j.{Logger, LoggerFactory}
 import org.w3c.dom.{Document, Element, Node, NodeList}
 
 import scala.annotation.tailrec
 import scala.xml.InputSource
 
 
+class TemplateEngineTestSetWithBackends(val settings: TemplateEngineTestSet.Settings)
+                                       (val input: String,
+                                        val expectedResults: Map[Backend, BackendResult])
+
+
 class TemplateEngineTestSet(val settings: TemplateEngineTestSet.Settings)
                            (val input: String,
-                            val expectedResults: Map[BackendName, BackendResult])
+                            val expectedResults: Map[BackendName, BackendResult]) {
+
+  private val logger: Logger = LoggerFactory.getLogger(getClass)
+
+  def associateBackends(backends: Set[Backend],
+                        requireAtLeastOneBackend: Boolean = true,
+                        requireAllBackends: Boolean = false):
+    Either[SqlppError, TemplateEngineTestSetWithBackends] = {
+
+    val empty: Either[SqlppError, Map[Backend, BackendResult]] =
+      Right(Map.empty)
+
+    val res = expectedResults.foldLeft(empty) {
+      case (eAcc, (thisBackendName, thisBackendExpectedResult)) =>
+        eAcc.flatMap { acc =>
+
+          Backend.Lookup.findMatchWithoutOverlap(backends)(thisBackendName)
+            .map {
+              case Some(foundBackend) =>
+                acc.updated(foundBackend, thisBackendExpectedResult)
+              case None => {
+                logger.warn(
+                  "Could not find backend for test result " +
+                    s"$thisBackendName -> $thisBackendExpectedResult")
+                acc
+              }
+            }
+        }
+      }
+
+
+    def errMsg(m: String): String =
+      m + s" in call to associateBackends(backends = $backends)" +
+        s" with expectedResults = $expectedResults"
+
+    lazy val needAtLeastOneBackendError =
+      new RequiredBackendError(errMsg(s"Expected at least 1 backend"))
+
+    lazy val needAllBackendsError =
+      new RequiredBackendError(errMsg(s"Expected to find a backend for" +
+        s" every test case (${expectedResults.size} backends)"))
+
+    res
+      .filterOrElse(_.size <= 0, needAtLeastOneBackendError)
+      .filterOrElse(_.size != expectedResults.size, needAllBackendsError)
+      .map { foundBackends =>
+        new TemplateEngineTestSetWithBackends(settings)(
+          input, foundBackends)
+      }
+  }
+}
 
 object TemplateEngineTestSet {
   type BackendName = String
   type BackendResult = String
+
   class Settings(val normalized: Boolean)
 
   object Settings {
     val default: Settings = new Settings(false)
   }
+
+  class TemplateEngineTestSetError(override val msg: String)
+    extends SqlppError(msg)
+
+  class RequiredBackendError(override val msg: String)
+    extends TemplateEngineTestSetError(msg)
 }
 
 class ParseTest {
@@ -220,4 +284,6 @@ object ParseTest {
 
     ParseDocument(document)
   }
+
+  def readtest(testLocation: InputSource, )
 }
