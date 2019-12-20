@@ -9,6 +9,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import org.w3c.dom.{Document, Element, Node, NodeList}
 
 import scala.annotation.tailrec
+import scala.collection.immutable.StringOps
 import scala.xml.InputSource
 
 
@@ -106,12 +107,15 @@ object ParseTest {
   }
 
   private def normalize(str: String): String = {
-    val zero = new StringBuilder(str.length)
-    str.lines.foldLeft(zero) {
-      case (acc, thisLine) => {
-        acc.append(normalizeLine(thisLine))
+    val zero: java.lang.StringBuilder = new java.lang.StringBuilder()
+
+    //see https://stackoverflow.com/questions/52815574/scala-12-x-and-java-11-string-lines-how-to-force-the-implicit-conversion-in-a/52815819#52815819
+    (str: StringOps).lines
+      .foreach { thisLine =>
+
+        zero.append(thisLine)
       }
-    }.mkString
+    zero.toString
   }
 
   object Errors {
@@ -209,7 +213,7 @@ object ParseTest {
     def parseResultNode(resultNode: Element): Either[SqlppError, (String, String)] = {
       lazy val backendNameAttrError =
         new AttributeError(s"Expected result node to have a" +
-          s" \"${Names.backendNameAttribute}\" attribute containing" +
+          " \"" + Names.backendNameAttribute + "\" attribute containing" +
           "the name of the backend")
 
       lazy val noTestResultError =

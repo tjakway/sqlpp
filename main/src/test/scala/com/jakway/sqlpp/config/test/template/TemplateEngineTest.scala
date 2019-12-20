@@ -8,6 +8,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.{MatchResult, Matcher}
 import org.scalatest.matchers.should.Matchers
 
+import scala.collection.immutable.StringOps
+
 abstract class TemplateEngineTest(val testName: String = getClass.getName)
   extends AnyFlatSpec with Matchers {
   type TemplateOutput = String
@@ -49,7 +51,7 @@ object TemplateEngineTest {
         val sb = new StringBuffer()
         new Formatter(sb)
       }
-      str.lines.foreach { line =>
+      (str: StringOps).lines.foreach { line =>
         fmt.format("\t%s\n", line)
       }
 
