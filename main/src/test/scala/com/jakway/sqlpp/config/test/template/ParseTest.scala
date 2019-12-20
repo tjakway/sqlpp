@@ -88,10 +88,6 @@ object TemplateEngineTestSet {
     extends TemplateEngineTestSetError(msg)
 }
 
-class ParseTest {
-
-}
-
 object ParseTest {
   val newlineReplacement: String = " "
 
