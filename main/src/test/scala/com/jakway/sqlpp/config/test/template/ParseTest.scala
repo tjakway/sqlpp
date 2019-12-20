@@ -285,5 +285,15 @@ object ParseTest {
     ParseDocument(document)
   }
 
-  def readtest(testLocation: InputSource, )
+  def readTest(testLocation: InputSource,
+               backends: Set[Backend],
+               requireAtLeastOneBackend: Boolean = true,
+               requireAllBackends: Boolean = false):
+    Either[SqlppError, TemplateEngineTestSetWithBackends] = {
+
+    readTest(testLocation).flatMap { tests =>
+      tests.associateBackends(
+        backends, requireAtLeastOneBackend, requireAllBackends)
+    }
+  }
 }
