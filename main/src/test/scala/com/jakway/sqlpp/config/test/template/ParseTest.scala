@@ -3,12 +3,10 @@ package com.jakway.sqlpp.config.test.template
 import com.jakway.sqlpp.config.test.template.ParseTest.Errors.{AttributeError, ElementError, UnexpectedElementError}
 import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.{BackendName, BackendResult}
 import com.jakway.sqlpp.error.SqlppError
-import com.jakway.sqlpp.template.Backend
 import javax.xml.parsers.DocumentBuilderFactory
 import org.w3c.dom.{Document, Element, Node, NodeList}
 
 import scala.annotation.tailrec
-import scala.util.Try
 import scala.xml.InputSource
 
 
