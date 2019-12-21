@@ -7,6 +7,9 @@ import org.scalacheck.Gen
 trait TestConfig {
   val encodings: Set[String] = Set(StandardCharsets.UTF_8.displayName())
 
+  /**
+   * TODO: find somewhere more appropriate for this
+   */
   val genEncoding: Gen[String] = Gen.oneOf(encodings)
 }
 
