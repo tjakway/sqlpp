@@ -2,27 +2,24 @@ package com.jakway.sqlpp.config.test.template
 
 import java.util.Formatter
 
-import com.jakway.sqlpp.config.test.template.TemplateEngineTest.DocumentMatcher
+import com.jakway.sqlpp.config.test.template.TemplateEngineTestAsserter.DocumentMatcher
 import com.jakway.sqlpp.error.SqlppError
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.{MatchResult, Matcher}
+import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.matchers.{MatchResult, Matcher}
 
 import scala.collection.immutable.StringOps
 
-abstract class TemplateEngineTest(val testName: String = getClass.getName)
-  extends AnyFlatSpec with Matchers {
+trait TemplateEngineTestAsserter { this: Matchers =>
   type TemplateOutput = String
 
-  val testActionName: String = TemplateEngineTest.defaultTestActionName
+  protected def assertTemplateEngineTest(
+                   expectedRes: => Either[SqlppError, TemplateOutput],
+                   actualRes: => Either[SqlppError, TemplateOutput]): Assertion = {
 
-  def getExpected: Either[SqlppError, TemplateOutput]
-  def getActual: Either[SqlppError, TemplateOutput]
-
-  testName should testActionName in {
     val res = for {
-      expected <- getExpected
-      actual <- getActual
+      expected <- expectedRes
+      actual <- actualRes
     } yield { (expected, actual) }
 
     res should be ('right)
@@ -30,18 +27,16 @@ abstract class TemplateEngineTest(val testName: String = getClass.getName)
     actual should matchExpectedTemplateOutput(expected)
   }
 
-  protected def matchExpectedTemplateOutput(expected: TemplateOutput) =
+  private  def matchExpectedTemplateOutput(expected: TemplateOutput) =
     new DocumentMatcher(expected)
 
-  protected def matches(expected: TemplateOutput,
+  private def matches(expected: TemplateOutput,
                         actual: TemplateOutput): MatchResult = {
     new DocumentMatcher(expected).apply(actual)
   }
 }
 
-object TemplateEngineTest {
-  val defaultTestActionName: String = "match expected output"
-
+object TemplateEngineTestAsserter {
   class DocumentMatcher(val expected: String)
     extends Matcher[String] {
 
