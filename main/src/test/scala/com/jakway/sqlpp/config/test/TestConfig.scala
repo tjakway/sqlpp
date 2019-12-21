@@ -11,3 +11,11 @@ trait TestConfig {
 }
 
 object TestConfig extends TestConfig
+
+trait HasTestConfig {
+  val testConfig: TestConfig
+}
+
+trait WithDefaultTestConfig extends HasTestConfig {
+  override val testConfig: TestConfig = TestConfig
+}
