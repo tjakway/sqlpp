@@ -287,5 +287,9 @@ object TemplateEngine {
     }
   }
 
-  def apply = Constructor.apply
+  def apply: String =>
+             Set[LoaderType] =>
+             ExtraTemplateOptions =>
+             PropertyMap =>
+             Either[SqlppError, TemplateEngine] = Constructor.apply
 }
