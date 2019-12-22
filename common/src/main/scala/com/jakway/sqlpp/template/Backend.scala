@@ -1,32 +1,33 @@
 package com.jakway.sqlpp.template
 
+import java.util.Properties
+
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.Backend.Lookup.Error.TooManyMatches
 import com.jakway.sqlpp.template.Backend.NamelessBackendError
 
 /**
  * @param names
- * @param templateIdentifier resource path, file path, etc.
- *                           Whatever is recognized by the resource loader
  */
-case class Backend(names: Set[String],
-                   templateIdentifier: String) {
+abstract class Backend(val names: Set[String]) {
   def matches(x: String): Boolean =
     names.exists(Backend.areEqual(_, x))
 
-  def toOutputStringName: Either[SqlppError, String] =
+  def getName: Either[SqlppError, String] =
     names.headOption match {
       case Some(x) => Right(x)
       case None => Left(new NamelessBackendError(
-        s"Backend with template identifier $templateIdentifier" +
-          s" has no name"
-      ))
+          toString + " has no name"))
     }
+
+  def toValueSource: Either[SqlppError, ValueSource]
 }
 
 object Backend {
   class NamelessBackendError(override val msg: String)
     extends SqlppError(msg)
+
+  class Data(val backendProperties: Properties)
 
   def areEqual(left: String, right: String): Boolean = {
     def normalizeString(str: String): String = str.trim.toLowerCase()
