@@ -1,6 +1,6 @@
 package com.jakway.sqlpp.template
 
-import java.io.{BufferedInputStream, File, FileInputStream}
+import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.util.{ContextUtil, MapToProperties}
@@ -38,9 +38,13 @@ case class PropertySource(prop: Properties) extends ValueSource {
 
 object PropertySource {
   def fromXML(file: File): Either[SqlppError, PropertySource] = {
+    fromXML(new BufferedInputStream(new FileInputStream(file)))
+  }
+
+  def fromXML(inputStream: InputStream): Either[SqlppError, PropertySource] = {
     Try {
       val p = new Properties()
-      p.loadFromXML(new BufferedInputStream(new FileInputStream(file)))
+      p.loadFromXML(inputStream)
       PropertySource(p)
     } match {
       case Success(x) => Right(x)
