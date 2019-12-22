@@ -4,6 +4,8 @@ import java.util.Properties
 
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ValueSource
+import com.jakway.sqlpp.template.backend.Backend.Lookup.Error.TooManyMatches
+import com.jakway.sqlpp.template.backend.Backend.NamelessBackendError
 
 /**
  * @param names
