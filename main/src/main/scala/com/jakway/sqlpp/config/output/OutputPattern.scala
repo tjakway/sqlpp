@@ -70,7 +70,7 @@ class OutputPattern(val outputCharset: String)
   }
 
   protected def apply(backend: Backend): Either[SqlppError, Writer] = {
-    backend.toOutputStringName.flatMap(apply)
+    backend.getName.flatMap(apply)
   }
 
   def permutateBackendDests(backends: Seq[Backend]):
