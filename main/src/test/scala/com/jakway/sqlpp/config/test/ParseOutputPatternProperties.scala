@@ -11,13 +11,14 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class ParseOutputPatternProperties
   extends AnyPropSpec
-    with Matchers {
+    with Matchers
+    with WithDefaultTestConfig {
   import ScalaCheckPropertyChecks._
 
   property("Parse dash to indicate write to stdout") {
     forAll(ParseOutputPatternProperties
       .GenParseOutputPatternTest
-      .genParseDashTest) { test =>
+      .genParseDashTest(testConfig.genEncoding)) { test =>
 
       val res = new ParseOutputPattern(test.encoding)
         .apply(test.toParse, test.requireFormatSymbol)
@@ -37,10 +38,11 @@ object ParseOutputPatternProperties {
     private val defaultGenRequireFormatSymbol: Gen[Boolean] =
       Arbitrary.arbBool.arbitrary
 
-    private def apply(genToParse: Gen[String],
+    private def apply(genEncoding: Gen[String],
+                      genToParse: Gen[String],
                       genRequireFormatSymbol: Gen[Boolean] =
                         defaultGenRequireFormatSymbol): Gen[ParseOutputPatternTest] = {
-      TestConfig.genEncoding.flatMap { encoding =>
+      genEncoding.flatMap { encoding =>
         genRequireFormatSymbol.flatMap { requireFormatSymbol =>
           genToParse.map { toParse =>
             new ParseOutputPatternTest(encoding, requireFormatSymbol, toParse)
@@ -67,8 +69,8 @@ object ParseOutputPatternProperties {
       res.map(_.mkString)
     }
 
-    val genParseDashTest: Gen[ParseOutputPatternTest] = {
-      apply(genDashString, GenUtil.const(false))
+    def genParseDashTest(genEncoding: Gen[String]): Gen[ParseOutputPatternTest] = {
+      apply(genEncoding, genDashString, GenUtil.const(false))
     }
   }
 }

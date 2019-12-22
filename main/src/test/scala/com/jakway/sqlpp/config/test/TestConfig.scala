@@ -35,5 +35,5 @@ trait HasTestConfig {
 }
 
 trait WithDefaultTestConfig extends HasTestConfig {
-  override val testConfig: TestConfig = TestConfig
+  override val testConfig: TestConfig = TestConfig.default
 }
