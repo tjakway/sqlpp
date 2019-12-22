@@ -14,5 +14,4 @@ abstract class TemplateEngineTest(val testResource: String,
   testName should "pass template engine tests" in {
 
   }
-
 }

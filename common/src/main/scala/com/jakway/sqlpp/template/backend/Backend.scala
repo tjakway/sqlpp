@@ -1,10 +1,9 @@
-package com.jakway.sqlpp.template
+package com.jakway.sqlpp.template.backend
 
 import java.util.Properties
 
 import com.jakway.sqlpp.error.SqlppError
-import com.jakway.sqlpp.template.Backend.Lookup.Error.TooManyMatches
-import com.jakway.sqlpp.template.Backend.NamelessBackendError
+import com.jakway.sqlpp.template.ValueSource
 
 /**
  * @param names

@@ -4,7 +4,7 @@ import java.io.Writer
 
 import com.jakway.sqlpp.config.entries.ParseOutputPattern
 import com.jakway.sqlpp.error.SqlppError
-import com.jakway.sqlpp.template.Backend
+import com.jakway.sqlpp.template.backend.Backend
 import com.jakway.sqlpp.util.FileUtil
 
 class StdoutOutputPattern(override val outputCharset: String)

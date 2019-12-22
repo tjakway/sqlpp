@@ -3,7 +3,7 @@ package com.jakway.sqlpp.config.test.template
 import com.jakway.sqlpp.config.test.template.ParseTest.Errors.{AttributeError, ElementError, UnexpectedElementError}
 import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.{BackendName, BackendResult, RequiredBackendError}
 import com.jakway.sqlpp.error.SqlppError
-import com.jakway.sqlpp.template.Backend
+import com.jakway.sqlpp.template.backend.Backend
 import javax.xml.parsers.DocumentBuilderFactory
 import org.slf4j.{Logger, LoggerFactory}
 import org.w3c.dom.{Document, Element, Node, NodeList}

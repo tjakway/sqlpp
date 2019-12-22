@@ -5,7 +5,7 @@ import java.io.{BufferedWriter, File, OutputStreamWriter, Writer}
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.config.output.OutputTarget.OpenWriterError
 import com.jakway.sqlpp.error.SqlppError
-import com.jakway.sqlpp.template.Backend
+import com.jakway.sqlpp.template.backend.Backend
 import com.jakway.sqlpp.util.FileUtil
 
 import scala.util.{Failure, Success, Try}

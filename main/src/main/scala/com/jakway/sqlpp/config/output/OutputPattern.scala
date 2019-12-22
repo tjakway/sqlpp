@@ -6,7 +6,7 @@ import java.util.{Formatter, Locale}
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.config.output.OutputPattern.{OutputPatternFormatError, OutputPatternFormatException, OutputPatternOpenWriterError}
 import com.jakway.sqlpp.error.{CheckFile, CheckString, SqlppError}
-import com.jakway.sqlpp.template.Backend
+import com.jakway.sqlpp.template.backend.Backend
 import com.jakway.sqlpp.util.{TryClose, TryToEither}
 import org.slf4j.{Logger, LoggerFactory}
 
