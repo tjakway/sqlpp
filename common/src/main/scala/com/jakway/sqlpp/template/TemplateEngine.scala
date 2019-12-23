@@ -25,14 +25,13 @@ trait TemplateEngine {
   val initProperties: Properties
   val velocityEngine: VelocityEngine
   val encoding: String
-  protected val stringResourceRepositoryName: String
 
   def apply(templateName: String,
             vs: ValueSource,
             output: Writer): Either[SqlppError, Unit] = {
 
     TemplateEngine
-      .GetTemplate(velocityEngine, templateName, encoding)
+      .GetTemplate.getTemplateFromName(velocityEngine, templateName, encoding)
       .flatMap(apply(_, vs, output))
   }
 
@@ -49,22 +48,46 @@ trait TemplateEngine {
     case Failure(t) => Left(new TemplateEngineException(t))
   }
 
-  def multiApplyWriters(velocityTemplate: Template,
-            ioMap: IOMap): Either[SqlppError, Unit] = {
+  def multiApplyWriters(templateName: String,
+                        ioMap: IOMap): Either[SqlppError, Unit] = {
     TemplateEngine
-      .GetTemplate(velocityEngine, templateName, encoding)
-      .flatMap { template =>
-        val empty: Either[SqlppError, Unit] = Right({})
-        ioMap.foldLeft(empty) {
-          case (eAcc, (vs, output)) => eAcc.flatMap { acc =>
-            for {
-              _ <- apply(template, vs, output)
-              _ <- TemplateEngine.genericWrapTry(Try(output.close()))
-            } yield {}
-          }
-        }
-      }
+      .GetTemplate.getTemplateFromName(velocityEngine, templateName, encoding)
+      .flatMap(template => multiApplyWriters(template, ioMap))
   }
+
+  def multiApplyWriters(template: Template,
+            ioMap: IOMap): Either[SqlppError, Unit] = {
+    val empty: Either[SqlppError, Unit] = Right({})
+    ioMap.foldLeft(empty) {
+      case (eAcc, (vs, output)) => eAcc.flatMap { acc =>
+        for {
+          _ <- apply(template, vs, output)
+          _ <- TemplateEngine.genericWrapTry(Try(output.close()))
+        } yield {}
+      }
+    }
+  }
+
+  def multiApplyFiles(templateName: String,
+                      ioMap: Map[ValueSource, File]): Either[SqlppError, Unit] = {
+    val empty: Either[SqlppError, Map[ValueSource, Writer]] = Right(Map.empty)
+    val writerMap = ioMap.foldLeft(empty) {
+      case (eAcc, (vs, dest)) => eAcc.flatMap { acc =>
+        openOutput(dest)
+          .map(output => acc.updated(vs, output))
+      }
+    }
+
+    writerMap.flatMap(multiApplyWriters(templateName, _))
+  }
+
+  def loadTemplateFromInputStream: InputStream =>
+        String =>
+        String =>
+        String =>
+        Either[SqlppError, Template] =
+    (TemplateEngine.GetTemplate.getTemplateFromInputStream _)
+      .curried(velocityEngine)
 
   private def openOutput: File => Either[SqlppError, Writer] =
     FileUtil.openWriter(encoding, new OpenOutputWriterError(_))
@@ -113,7 +136,7 @@ object TemplateEngine {
     extends TemplateEngineError(msg)
 
   object GetTemplate {
-    def apply(engine: VelocityEngine,
+    def getTemplateFromName(engine: VelocityEngine,
               templateName: String,
               encoding: String): Either[SqlppError, Template] = {
       for {
@@ -124,7 +147,7 @@ object TemplateEngine {
       }
     }
 
-    def apply(engine: VelocityEngine,
+    def getTemplateFromInputStream(engine: VelocityEngine,
               templateSource: InputStream,
               templateSourceKey: String,
               repositoryName: String,
@@ -137,7 +160,7 @@ object TemplateEngine {
           templateSourceKey,
           repo,
           encoding)
-        template <- apply(engine, templateSourceKey, encoding)
+        template <- getTemplateFromName(engine, templateSourceKey, encoding)
       } yield {
         template
       }
