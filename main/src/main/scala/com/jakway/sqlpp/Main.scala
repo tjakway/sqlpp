@@ -16,7 +16,14 @@ object Main {
     for {
       ioMap <- checkedConfig.getIOMap
       templateEngine <- checkedConfig.getTemplateEngine
-      _ <- templateEngine.multiApplyWriters(checkedConfig.)
+      template <- templateEngine
+        .loadTemplateFromInputStream(
+          checkedConfig.source)(
+          checkedConfig.templateStringInfo.templateSourceKey)(
+          checkedConfig.templateStringInfo.stringResourceRepositoryName)(
+          checkedConfig.inputEncoding)
+
+      _ <- templateEngine.multiApplyWriters(template, ioMap)
     } yield {{}}
   }
 }
