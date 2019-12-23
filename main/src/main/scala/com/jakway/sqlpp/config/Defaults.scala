@@ -14,4 +14,9 @@ object Defaults {
     val xdgConfigSubdirName: String = "sqlpp"
     val homeSubdirName: String = ".sqlpp"
   }
+
+  object TemplateStringInfo {
+    val defaultTemplateSourceKey: String = "__SQLPP_TEMPLATE_SOURCE_KEY"
+    val defaultStringResourceRepositoryName: String = "__SQLPP_STRING_RESOURCE_REPOSITORY"
+  }
 }
