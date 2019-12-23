@@ -3,14 +3,15 @@ package com.jakway.sqlpp.template.backend
 import java.util.Properties
 
 import com.jakway.sqlpp.error.SqlppError
-import com.jakway.sqlpp.template.ValueSource
+import com.jakway.sqlpp.template.{DelegatingValueSource, ValueSource}
 import com.jakway.sqlpp.template.backend.Backend.Lookup.Error.TooManyMatches
 import com.jakway.sqlpp.template.backend.Backend.NamelessBackendError
 
 /**
  * @param names
  */
-abstract class Backend(val names: Set[String]) {
+abstract class Backend(val names: Set[String])
+  extends DelegatingValueSource {
   def matches(x: String): Boolean =
     names.exists(Backend.areEqual(_, x))
 
@@ -20,8 +21,6 @@ abstract class Backend(val names: Set[String]) {
       case None => Left(new NamelessBackendError(
           toString + " has no name"))
     }
-
-  def toValueSource: Either[SqlppError, ValueSource]
 }
 
 object Backend {

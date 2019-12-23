@@ -14,6 +14,11 @@ import org.apache.velocity.exception.{ParseErrorException, ResourceNotFoundExcep
 
 import scala.util.{Failure, Success, Try}
 
+/**
+ * TODO: make a distinction between input and output encoding
+ * so that we can output in different encoding from the one we
+ * read in
+ */
 trait TemplateEngine {
   val initProperties: Properties
   val velocityEngine: VelocityEngine

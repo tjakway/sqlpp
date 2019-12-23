@@ -10,7 +10,7 @@ abstract class PropertiesBackend(override val names: Set[String])
 
   def getPropertiesInputStream: Either[SqlppError, InputStream]
 
-  override def toValueSource: Either[SqlppError, ValueSource] = {
+  override protected def getValueSource: Either[SqlppError, ValueSource] = {
     getPropertiesInputStream.flatMap(PropertySource.fromXML)
   }
 }
