@@ -4,7 +4,9 @@ import java.io.{BufferedWriter, File, OutputStreamWriter, Writer}
 
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.config.output.OutputTarget.OpenWriterError
+import com.jakway.sqlpp.error
 import com.jakway.sqlpp.error.SqlppError
+import com.jakway.sqlpp.template.{TemplateEngine, ValueSource}
 import com.jakway.sqlpp.template.backend.Backend
 import com.jakway.sqlpp.util.FileUtil
 
@@ -15,6 +17,28 @@ abstract class OutputTarget(val backend: Backend) {
 }
 
 object OutputTarget {
+  /**
+   * @param outputTargets
+   * @param outputEncoding
+   * @return an IOMap suitable for passing to TemplateEngine
+   */
+  def toIOMap(outputTargets: Seq[OutputTarget], outputEncoding: String):
+    Either[SqlppError, TemplateEngine.IOMap] = {
+
+    val empty: Either[SqlppError, TemplateEngine.IOMap] =
+      Right(Map.empty)
+
+    outputTargets.foldLeft(empty) {
+      case (eAcc, thisOutputTarget) => eAcc.flatMap { acc =>
+        thisOutputTarget
+          .getWriter(outputEncoding)
+          .map(writer =>
+            acc.updated(thisOutputTarget.backend, writer))
+
+      }
+    }
+  }
+
   class OutputTargetError(override val msg: String)
     extends ConfigError(msg)
 

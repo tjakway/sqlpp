@@ -1,16 +1,18 @@
 package com.jakway.sqlpp.template
 
-import java.io.{BufferedWriter, File, FileOutputStream, OutputStreamWriter, Writer}
+import java.io.{BufferedWriter, File, FileOutputStream, InputStream, OutputStreamWriter, Writer}
 import java.util.Properties
 
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
-import com.jakway.sqlpp.template.TemplateEngine.{OpenOutputWriterError, TemplateEngineException}
-import com.jakway.sqlpp.util.{FileUtil, MapToProperties, MergeMaps, MergeProperties}
+import com.jakway.sqlpp.template.TemplateEngine.{IOMap, OpenOutputWriterError, TemplateEngineException}
+import com.jakway.sqlpp.util.{FileUtil, MapToProperties, MergeMaps, MergeProperties, TryToEither}
 import org.apache.velocity.Template
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.context.Context
 import org.apache.velocity.exception.{ParseErrorException, ResourceNotFoundException}
+import org.apache.velocity.runtime.resource.loader.StringResourceLoader
+import org.apache.velocity.runtime.resource.util.StringResourceRepository
 
 import scala.util.{Failure, Success, Try}
 
@@ -23,6 +25,7 @@ trait TemplateEngine {
   val initProperties: Properties
   val velocityEngine: VelocityEngine
   val encoding: String
+  protected val stringResourceRepositoryName: String
 
   def apply(templateName: String,
             vs: ValueSource,
@@ -46,8 +49,8 @@ trait TemplateEngine {
     case Failure(t) => Left(new TemplateEngineException(t))
   }
 
-  def multiApplyWriters(templateName: String,
-            ioMap: Map[ValueSource, Writer]): Either[SqlppError, Unit] = {
+  def multiApplyWriters(velocityTemplate: Template,
+            ioMap: IOMap): Either[SqlppError, Unit] = {
     TemplateEngine
       .GetTemplate(velocityEngine, templateName, encoding)
       .flatMap { template =>
@@ -63,26 +66,12 @@ trait TemplateEngine {
       }
   }
 
-
-  //can't overload on erased types
-  def multiApplyFiles(templateName: String,
-            ioMap: Map[ValueSource, File]): Either[SqlppError, Unit] = {
-    val empty: Either[SqlppError, Map[ValueSource, Writer]] = Right(Map.empty)
-    val writerMap = ioMap.foldLeft(empty) {
-      case (eAcc, (vs, dest)) => eAcc.flatMap { acc =>
-        openOutput(dest)
-          .map(output => acc.updated(vs, output))
-      }
-    }
-
-    writerMap.flatMap(multiApplyWriters(templateName, _))
-  }
-
   private def openOutput: File => Either[SqlppError, Writer] =
     FileUtil.openWriter(encoding, new OpenOutputWriterError(_))
 }
 
 object TemplateEngine {
+  type IOMap = Map[ValueSource, Writer]
   type PropertyMap = Map[String, String]
 
   case class ExtraTemplateOptions(extraDirs: Seq[File],
@@ -120,6 +109,9 @@ object TemplateEngine {
     }
   }
 
+  class StringResourceRepositoryError(override val msg: String)
+    extends TemplateEngineError(msg)
+
   object GetTemplate {
     def apply(engine: VelocityEngine,
               templateName: String,
@@ -130,6 +122,88 @@ object TemplateEngine {
       } yield {
         res
       }
+    }
+
+    def apply(engine: VelocityEngine,
+              templateSource: InputStream,
+              templateSourceKey: String,
+              repositoryName: String,
+              encoding: String): Either[SqlppError, Template] = {
+      for {
+        templateString <- readStream(templateSource, encoding)
+        repo <- getStringResourceRepository(engine, repositoryName)
+        _ <- addTemplateString(engine,
+          templateString,
+          templateSourceKey,
+          repo,
+          encoding)
+        template <- apply(engine, templateSourceKey, encoding)
+      } yield {
+        template
+      }
+    }
+
+    /**
+     * add the string as a resource
+     */
+    private def addTemplateString(engine: VelocityEngine,
+                                  templateString: String,
+                                  key: String,
+                                  repo: StringResourceRepository,
+                                  encoding: String):
+      Either[SqlppError, Unit] = {
+
+      def onError: Throwable => SqlppError = { t =>
+        new StringResourceRepositoryError(
+          s"Error adding template string < $templateString > " +
+            s" to StringResourceRepository < $repo >, " +
+            s"caused by: " + SqlppError.formatThrowableCause(t))
+      }
+
+      TryToEither.apply(onError) {
+        Try {
+          repo.putStringResource(key, templateString, encoding)
+        }
+      }
+    }
+
+    private def readStream(inputStream: InputStream, encoding: String):
+      Either[SqlppError, String] = {
+
+      def onError: Throwable => SqlppError = { t =>
+        new StringResourceRepositoryError(
+          s"Error reading template source into a String," +
+            s" caused by: " + SqlppError.formatThrowableCause(t))
+      }
+
+      TryToEither.apply(onError) {
+        Try(scala.io.Source.fromInputStream(inputStream, encoding).mkString)
+      }
+    }
+
+    private def getStringResourceRepository(engine: VelocityEngine,
+                                            repositoryName: String):
+      Either[SqlppError, StringResourceRepository] = {
+
+      Option(engine.getApplicationAttribute(repositoryName)) match {
+        case Some(stringResourceRepository) => {
+          stringResourceRepository match {
+            case repository: StringResourceRepository =>
+              Right(repository)
+
+            case _ => Left(new StringResourceRepositoryError(
+              s"Found a non-null repository under the name $repositoryName" +
+              " but it's not an instance of StringResourceRepository"
+            ))
+          }
+        }
+
+        case None => Left(new StringResourceRepositoryError(
+          s"Could not find a StringResourceRepository instance under the" +
+            s" name $repositoryName"
+        ))
+      }
+
     }
 
 
