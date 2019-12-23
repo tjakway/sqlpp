@@ -3,6 +3,7 @@ package com.jakway.sqlpp.config.entries
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.config.output.{OutputPattern, StdoutOutputPattern}
 import com.jakway.sqlpp.error.{CheckString, SqlppError}
+import com.jakway.sqlpp.util.RegexUtil
 
 import scala.util.matching.Regex
 
@@ -57,10 +58,8 @@ class ParseOutputPattern(val encoding: String) {
 }
 
 object ParseOutputPattern {
-  private lazy val unescaped: String = "(?<!\\\\)"
-
   lazy val outputStringRegex: Regex = {
-    val unescapedPercentSRegex: String = unescaped + "%s"
+    val unescapedPercentSRegex: String = RegexUtil.unescaped + "%s"
     val matchAnything: String = ".*"
 
     new Regex(matchAnything + unescapedPercentSRegex + matchAnything)
@@ -70,7 +69,7 @@ object ParseOutputPattern {
   lazy val stdoutSpecialRegex: Regex = {
     //see https://stackoverflow.com/q/4068629/389943
     val unescapedDashRegex: String =
-      unescaped + "[" + stdoutSpecialChar.toString + "]"
+      RegexUtil.unescaped + "[" + stdoutSpecialChar.toString + "]"
 
     val matchAnyWhitespace = """\s*"""
 
