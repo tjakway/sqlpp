@@ -105,101 +105,48 @@ object ResourceLoaderConfig {
       extends StandardResourceLoaderError("Must pass at least one object of LoaderType")
 
 
+    //entries from http://velocity.apache.org/engine/1.7/developer-guide.html#configuring-resource-loaders
+    private def standardEntries(name: String)
+                       (description: String,
+                        fullyQualifiedClassName: String,
+                        pathOption: Option[Seq[String]]): PropertyMap = {
+      val m = Map {
+        s"resource.loader.$name.description" -> description
+        s"resource.loader.$name.class" -> fullyQualifiedClassName
+      }
+
+      pathOption match {
+        case Some(path) => m.updated(s"$name.resource.loader.path", multipleEntries(path))
+        case None => m
+      }
+    }
+
+    private def fileEntries(name: String): PropertyMap = {
+      Map {
+        s"resource.loader.$name.cache" -> "false"
+        s"resource.loader.$name.modificationCheckInterval" -> "0"
+      }
+    }
 
 
     sealed trait LoaderType {
-      def toPropertyMap(forDirs: Seq[String],
-                        forJars: Seq[String]): Either[SqlppError, PropertyMap]
+      val loaderName: String
     }
 
     object LoaderType {
       val all: Set[LoaderType] = Set(FileLoader, ClassLoader, JarLoader)
-
-      //entries from http://velocity.apache.org/engine/1.7/developer-guide.html#configuring-resource-loaders
-      def withStandardEntries(name: String,
-                              description: String,
-                              fullyQualifiedClassName: String,
-                              pathOption: Option[Seq[String]]):
-      PropertyMap = {
-
-        val m = Map {
-          s"resource.loader.$name.description" -> description
-          s"resource.loader.$name.class" -> fullyQualifiedClassName
-        }
-
-        pathOption match {
-          case Some(path) => m.updated(s"$name.resource.loader.path", multipleEntries(path))
-          case None => m
-        }
-      }
-
-      def fileEntries(name: String): PropertyMap = {
-        Map {
-          s"resource.loader.$name.cache" -> "false"
-          s"resource.loader.$name.modificationCheckInterval" -> "0"
-        }
-      }
     }
 
     case object FileLoader extends LoaderType {
-
-      /**
-       * @param forDirs
-       * @param forJars ignored
-       * @return
-       */
-      override def toPropertyMap(forDirs: Seq[String],
-                                 forJars: Seq[String]):
-      Either[SqlppError, PropertyMap] = {
-        val loaderName: String = "file"
-        val description: String = "Velocity File Resource Loader"
-        val className: String =
-          "org.apache.velocity.runtime.resource.loader.FileResourceLoader"
-
-        ResourceLoaderProperties.mergePropertyMaps(
-          LoaderType.withStandardEntries(
-            loaderName,
-            description,
-            className,
-            Some(forDirs)),
-          LoaderType.fileEntries(loaderName)
-        )
-      }
+      override val loaderName: String = "file"
     }
 
     case object ClassLoader extends LoaderType {
-      override def toPropertyMap(
-                                  forDirs: Seq[String],
-                                  forJars: Seq[String]):
-      Either[SqlppError, PropertyMap] = {
-        val loaderName: String = "class"
-        val description: String = "Velocity Classpath Resource Loader"
-        val className: String =
-          "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader"
-
-        LoaderType.withStandardEntries(
-          loaderName,
-          description,
-          className,
-          None)
-
-        /*
-
-      Right(new ResourceLoaderProperties(Set(ClassLoader.loaderName),
-        standardEntries(ClassLoader.loaderName)(
-          "Velocity Classpath Resource Loader",
-          "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader",
-          None)))
-         */
-      }
+      override val loaderName: String = "class"
     }
 
     case object JarLoader extends LoaderType {
       override val loaderName: String = "jar"
-    }
-
-    case object StringLoader extends LoaderType {
-      override val loaderName: String = "stringloader"
     }
 
     /**
