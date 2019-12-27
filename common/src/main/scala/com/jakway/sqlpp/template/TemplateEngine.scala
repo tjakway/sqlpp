@@ -1,17 +1,16 @@
 package com.jakway.sqlpp.template
 
-import java.io.{BufferedWriter, File, FileOutputStream, InputStream, OutputStreamWriter, Writer}
+import java.io.{File, InputStream, Writer}
 import java.util.Properties
 
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.{IOMap, OpenOutputWriterError, TemplateEngineException}
-import com.jakway.sqlpp.util.{FileUtil, MapToProperties, MergeMaps, MergeProperties, TryToEither}
+import com.jakway.sqlpp.util._
 import org.apache.velocity.Template
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.context.Context
 import org.apache.velocity.exception.{ParseErrorException, ResourceNotFoundException}
-import org.apache.velocity.runtime.resource.loader.StringResourceLoader
 import org.apache.velocity.runtime.resource.util.StringResourceRepository
 
 import scala.util.{Failure, Success, Try}
@@ -97,7 +96,8 @@ object TemplateEngine {
   type IOMap = Map[ValueSource, Writer]
   type PropertyMap = Map[String, String]
 
-  case class ExtraTemplateOptions(extraDirs: Seq[File],
+  case class ExtraTemplateOptions(stringRepositoryName: String,
+                                  extraDirs: Seq[File],
                                   extraJars: Seq[String]) {
     def dirsToStrings: Seq[String] = extraDirs.map(_.getAbsolutePath)
   }
@@ -341,8 +341,9 @@ object TemplateEngine {
         loaderProperties <- ResourceLoaderConfig
             .StandardResourceLoaders
             .getCombinedProperties(
-              resourceLoaderTypes,
-              extraTemplateOptions.dirsToStrings,
+              resourceLoaderTypes)(
+              extraTemplateOptions.stringRepositoryName)(
+              extraTemplateOptions.dirsToStrings)(
               extraTemplateOptions.extraJars)
         additionalOptions <- additionalVelocityPropertiesToPropertiesObject(additionalVelocityProperties)
 

@@ -7,7 +7,11 @@ import com.jakway.sqlpp.template.TemplateEngine.ExtraTemplateOptions
 object Defaults {
   val defaultEncoding: Charset = StandardCharsets.UTF_8
   val allowOverwrite: Boolean = false
-  val extraTemplateOptions: ExtraTemplateOptions = ExtraTemplateOptions(Seq(), Seq())
+  lazy val extraTemplateOptions: ExtraTemplateOptions =
+    ExtraTemplateOptions(
+      TemplateStringInfo.defaultStringResourceRepositoryName,
+      Seq(),
+      Seq())
 
   object DataDir {
     val dataDirVarName: String = "SQLPP_DIR"
