@@ -40,4 +40,9 @@ object GenUtil {
       }
     }
   }
+
+  //there's some ambiguity here, but try our best
+  val whitespaceChars: Set[Char] =
+    Set('\t', '\n', '\r', '\f', ' ')
+      .filter(Character.isWhitespace)
 }

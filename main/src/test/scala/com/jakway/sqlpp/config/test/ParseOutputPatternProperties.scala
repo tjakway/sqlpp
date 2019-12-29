@@ -52,12 +52,7 @@ object ParseOutputPatternProperties {
     }
 
     private val genOptionalWhitespace: Gen[Seq[Char]] = {
-      //there's some ambiguity here, but try our best
-      val whitespaceChars: Set[Char] =
-        Set('\t', '\n', '\r', '\f', ' ')
-            .filter(Character.isWhitespace)
-
-      Gen.someOf(whitespaceChars)
+      Gen.someOf(GenUtil.whitespaceChars)
     }
 
     private val genDashString: Gen[String] = {
