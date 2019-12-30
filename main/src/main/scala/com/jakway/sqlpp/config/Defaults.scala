@@ -29,7 +29,7 @@ object Defaults {
     val defaultTemplateSourceKey: String = "__SQLPP_TEMPLATE_SOURCE_KEY"
     val defaultStringResourceRepositoryName: String = "__SQLPP_STRING_RESOURCE_REPOSITORY"
 
-    val default: TemplateStringInfo = TemplateStringInfo()
+    val default: TemplateStringInfo = checked.TemplateStringInfo()
   }
 
   object Config {
