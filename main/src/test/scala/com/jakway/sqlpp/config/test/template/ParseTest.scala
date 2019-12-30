@@ -216,7 +216,7 @@ object ParseTest {
 
       def getNodeValue(onError: => SqlppError)
                       (e: Element): Either[SqlppError, String] = {
-        Option(e.getNodeValue).filter(_.trim.nonEmpty) match {
+        Option(e.getTextContent).filter(_.trim.nonEmpty) match {
           case Some(x) => Right(x.trim)
           case None => Left(onError)
         }
