@@ -18,7 +18,7 @@ class ParseOutputPatternProperties
   property("Parse dash to indicate write to stdout") {
     forAll(ParseOutputPatternProperties
       .GenParseOutputPatternTest
-      .genParseDashTest(testConfig.genEncoding)) { test =>
+      .genParseDashTest(GenTestConfig.genEncoding)) { test =>
 
       val res = new ParseOutputPattern(test.encoding)
         .apply(test.toParse, test.requireFormatSymbol)

@@ -27,9 +27,9 @@ abstract class TemplateEngineTest(val testResource: String,
     with WithDefaultTestConfig {
 
 
-  //TODO
-  protected def printTestSubject: String = ???
-  protected def printBackendTestAction(backend: Backend): String = ???
+  protected def printTestSubject: String = testName
+  protected def printBackendTestAction(backend: Backend): String =
+    s"$backend should pass backend test"
 
 
   protected val loaderTypes: Set[LoaderType] = {
