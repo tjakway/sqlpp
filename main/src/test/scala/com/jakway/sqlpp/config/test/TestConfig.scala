@@ -6,6 +6,9 @@ import com.jakway.sqlpp.config.Defaults
 import com.jakway.sqlpp.config.checked.TemplateStringInfo
 import com.jakway.sqlpp.config.test.TestConfig.ReadTemplateEngineTestOptions
 import com.jakway.sqlpp.error.SqlppError
+import com.jakway.sqlpp.template.GeneralVelocityOptions
+import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
+import com.jakway.sqlpp.template.TemplateEngine.{ExtraTemplateOptions, PropertyMap}
 import com.jakway.sqlpp.template.backend.{Backend, PropertiesResourceBackend}
 import org.scalacheck.Gen
 
@@ -28,6 +31,10 @@ trait TestConfig extends HasTestBackends {
 
   val encoding: String
   val templateStringInfo: TemplateStringInfo
+
+  val loaderTypes: Set[LoaderType]
+  val extraTemplateOptions: ExtraTemplateOptions
+  val additionalVelocityProperties: PropertyMap
 }
 
 object TestConfig {
@@ -42,6 +49,13 @@ object TestConfig {
     override val encoding: String = Defaults.defaultEncoding.displayName()
     override val templateStringInfo: TemplateStringInfo =
       Defaults.TemplateStringInfo.default
+
+    override val loaderTypes: Set[LoaderType] =
+      Defaults.Config.defaultResourceLoaderTypes
+
+    override val extraTemplateOptions: ExtraTemplateOptions = Defaults.extraTemplateOptions
+
+    override val additionalVelocityProperties: PropertyMap = GeneralVelocityOptions(encoding)
   }
 
   def getDefaultTestBackends: Either[SqlppError, Set[Backend]] = Right {

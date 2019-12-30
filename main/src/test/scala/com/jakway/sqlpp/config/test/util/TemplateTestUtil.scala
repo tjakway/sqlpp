@@ -17,8 +17,14 @@ trait TemplateTestUtil {
   val hashName: String = "SHA-256"
   val keyPrefix: String = "template_source_key_"
 
-  //TODO
-  def getTemplateEngine: TestConfig => Either[SqlppError, TemplateEngine] = ???
+  def getTemplateEngine: TestConfig => Either[SqlppError, TemplateEngine] = {
+    testConfig =>
+      TemplateEngine.apply(
+        testConfig.encoding)(
+        testConfig.loaderTypes)(
+        testConfig.extraTemplateOptions)(
+        testConfig.additionalVelocityProperties)
+  }
 
   def getTemplateSourceHash(templateString: String): Either[SqlppError, String] = {
     TryToEither(new HashTemplateSourceError(_)) {
