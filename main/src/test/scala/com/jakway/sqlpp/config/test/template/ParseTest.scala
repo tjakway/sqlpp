@@ -64,8 +64,8 @@ class TemplateEngineTestSet(val settings: TemplateEngineTestSet.Settings)
         s" every test case (${expectedResults.size} backends)"))
 
     res
-      .filterOrElse(_.size <= 0, needAtLeastOneBackendError)
-      .filterOrElse(_.size != expectedResults.size, needAllBackendsError)
+      .filterOrElse(_.size > 0, needAtLeastOneBackendError)
+      .filterOrElse(_.size == expectedResults.size, needAllBackendsError)
       .map { foundBackends =>
         new TemplateEngineTestSetWithBackends(settings)(
           input, foundBackends)
