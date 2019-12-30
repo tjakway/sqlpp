@@ -138,6 +138,9 @@ object ResourceLoaderConfig {
       "string.resource.loader.description" ->
         s"SQLPP String Resource Loader << $stringRepositoryName >>"
 
+      "resource.loader.string.class" ->
+        "org.apache.velocity.runtime.resource.loader.StringResourceRepositoryImpl"
+
       //need to call velocityEngine.getApplicationAttribute(stringRepositoryName)
       //to get the repository
       "string.resource.loader.repository.static" -> "false"
