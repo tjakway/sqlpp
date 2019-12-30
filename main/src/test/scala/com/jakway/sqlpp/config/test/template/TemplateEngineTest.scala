@@ -120,8 +120,8 @@ abstract class TemplateEngineTest(val testResource: String,
         .loadTemplateFromInputStream(
           templateAsInputStream)(
           templateSourceKey)(
-          testConfig.config.templateStringInfo.stringResourceRepositoryName)(
-          testConfig.config.inputEncoding)
+          testConfig.templateStringInfo.stringResourceRepositoryName)(
+          testConfig.encoding)
 
       //need to upcast the Map[Backend, StringWriter] to Map[ValueSource, Writer]
       ioMap = swMap.map {

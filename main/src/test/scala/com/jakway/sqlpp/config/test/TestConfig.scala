@@ -1,11 +1,9 @@
 package com.jakway.sqlpp.config.test
 
-import java.io.InputStream
 import java.nio.charset.StandardCharsets
 
 import com.jakway.sqlpp.config.Defaults
-import com.jakway.sqlpp.config.checked.Config
-import com.jakway.sqlpp.config.output.OutputTarget
+import com.jakway.sqlpp.config.checked.TemplateStringInfo
 import com.jakway.sqlpp.config.test.TestConfig.ReadTemplateEngineTestOptions
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.backend.Backend
@@ -26,25 +24,24 @@ trait HasTestBackends {
 }
 
 trait TestConfig extends HasTestBackends {
-  val config: Config
   val readTemplateEngineTestOptions: ReadTemplateEngineTestOptions
+
+  val encoding: String
+  val templateStringInfo: TemplateStringInfo
 }
 
 object TestConfig {
-  //*** replace with actual input stream in each test ***
-  val defaultSource: InputStream = null
-  val defaultOutputTargets: Seq[OutputTarget] = Seq.empty
-
   val default: TestConfig = new TestConfig {
-    override val config: Config =
-      Defaults.Config.default(defaultSource, defaultOutputTargets)
-
     override def getTestBackends: Either[SqlppError, Set[Backend]] = {
       getDefaultTestBackends
     }
 
     override val readTemplateEngineTestOptions: ReadTemplateEngineTestOptions =
       ReadTemplateEngineTestOptions.default
+
+    override val encoding: String = Defaults.defaultEncoding.displayName()
+    override val templateStringInfo: TemplateStringInfo =
+      Defaults.TemplateStringInfo.default
   }
 
   //TODO
