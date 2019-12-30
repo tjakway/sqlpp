@@ -1,5 +1,6 @@
 package com.jakway.sqlpp.config.test.template
 
+import com.jakway.sqlpp.config.test.TestConfig.ReadTemplateEngineTestOptions
 import com.jakway.sqlpp.config.test.template.ParseTest.Errors.{AttributeError, ElementError, UnexpectedElementError}
 import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.{BackendName, BackendResult, RequiredBackendError}
 import com.jakway.sqlpp.error.SqlppError
@@ -315,4 +316,14 @@ object ParseTest {
         backends, requireAtLeastOneBackend, requireAllBackends)
     }
   }
+
+  def readTest(testLocation: InputSource,
+               backends: Set[Backend],
+               readTemplateEngineTestOptions: ReadTemplateEngineTestOptions):
+    Either[SqlppError, TemplateEngineTestSetWithBackends] =
+    readTest(
+      testLocation,
+      backends,
+      readTemplateEngineTestOptions.requireAtLeastOneBackend,
+      readTemplateEngineTestOptions.requireAllBackends)
 }

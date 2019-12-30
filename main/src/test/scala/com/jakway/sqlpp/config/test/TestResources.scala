@@ -1,5 +1,8 @@
 package com.jakway.sqlpp.config.test
 
+import com.jakway.sqlpp.config.test.error.TestError
+import com.jakway.sqlpp.error.SqlppError
+
 object TestResources {
   val testBackendsDir: String = "test_backends"
 
@@ -11,4 +14,12 @@ object TestResources {
     inDir + "/" + item
   private def inTestBackendsDir(item: String): String = subdir(testBackendsDir, item)
 
+
+
+  class OpenTestResourceError(override val msg: String)
+    extends TestError(msg) {
+    def this(t: Throwable) {
+      this(SqlppError.formatThrowableCause(t))
+    }
+  }
 }

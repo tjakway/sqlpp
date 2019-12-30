@@ -41,3 +41,8 @@ case class Config(source: InputStream,
   def getIOMap: Either[SqlppError, TemplateEngine.IOMap] =
     OutputTarget.toIOMap(outputTargets, outputEncoding)
 }
+
+object Config {
+  //TODO
+  val default: Config = ???
+}
