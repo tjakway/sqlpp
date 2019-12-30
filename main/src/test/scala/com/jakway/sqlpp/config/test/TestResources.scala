@@ -8,7 +8,7 @@ object TestResources {
 
   val h2Backend: String = inTestBackendsDir("h2.xml")
   val postgresBackend: String = inTestBackendsDir("postgres.xml")
-  val defaultBackend: String = inTestBackendsDir("defaults.xml")
+  val defaultsBackend: String = inTestBackendsDir("defaults.xml")
 
   private def root(x: String): String = "/" + x
 

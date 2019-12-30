@@ -6,7 +6,7 @@ import com.jakway.sqlpp.config.Defaults
 import com.jakway.sqlpp.config.checked.TemplateStringInfo
 import com.jakway.sqlpp.config.test.TestConfig.ReadTemplateEngineTestOptions
 import com.jakway.sqlpp.error.SqlppError
-import com.jakway.sqlpp.template.backend.Backend
+import com.jakway.sqlpp.template.backend.{Backend, PropertiesResourceBackend}
 import org.scalacheck.Gen
 
 object GenTestConfig {
@@ -44,8 +44,16 @@ object TestConfig {
       Defaults.TemplateStringInfo.default
   }
 
-  //TODO
-  val getDefaultTestBackends: Either[SqlppError, Set[Backend]] = Right(Set())
+  def getDefaultTestBackends: Either[SqlppError, Set[Backend]] = Right {
+    Set(
+      new PropertiesResourceBackend(
+        Set("defaults"), TestResources.defaultsBackend),
+      new PropertiesResourceBackend(
+        Set("h2"), TestResources.h2Backend),
+      new PropertiesResourceBackend(
+        Set("postgres"), TestResources.postgresBackend)
+    )
+  }
 
   class ReadTemplateEngineTestOptions(val requireAtLeastOneBackend: Boolean,
                                       val requireAllBackends: Boolean)
