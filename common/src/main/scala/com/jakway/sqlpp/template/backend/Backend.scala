@@ -3,8 +3,8 @@ package com.jakway.sqlpp.template.backend
 import java.util.Properties
 
 import com.jakway.sqlpp.error.SqlppError
-import com.jakway.sqlpp.template.{DelegatingValueSource, ValueSource}
-import com.jakway.sqlpp.template.backend.Backend.Lookup.Error.TooManyMatches
+import com.jakway.sqlpp.template.DelegatingValueSource
+import com.jakway.sqlpp.template.backend.Backend.Lookup.Error.WrongNumberOfMatches
 import com.jakway.sqlpp.template.backend.Backend.NamelessBackendError
 
 /**
@@ -42,10 +42,10 @@ object Backend {
       class BackendLookupError(override val msg: String)
         extends SqlppError(msg)
 
-      class TooManyMatches(val matchingBackends: Set[Backend],
-                           val name: String)
+      class WrongNumberOfMatches(val matchingBackends: Set[Backend],
+                                 val name: String)
         extends BackendLookupError(s"Expected at most 1 backend to match" +
-          s" passed name $name but all of $matchingBackends match")
+          s" passed name $name but < $matchingBackends > match")
     }
 
     def getAllMatches: LookupF[Set[Backend]] = { backends => name =>
@@ -66,7 +66,7 @@ object Backend {
         if(matches.size == 1) {
           Right(matches.headOption)
         } else {
-          Left(new TooManyMatches(matches, name))
+          Left(new WrongNumberOfMatches(matches, name))
         }
       }
     }
