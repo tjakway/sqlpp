@@ -1,6 +1,7 @@
 lazy val root = (project in file("."))
     .aggregate(common, main, build_templates)
     .settings(testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "2"))
+    .settings(parallelExecution in Test := false)
 
 lazy val main = (project in file("main"))
                     .dependsOn(common)
