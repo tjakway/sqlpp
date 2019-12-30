@@ -14,8 +14,15 @@ trait TemplateEngineTestAsserter { this: Matchers =>
   type TemplateOutput = String
 
   protected def assertTemplateEngineTest(
-                   expectedRes: => Either[SqlppError, TemplateOutput],
-                   actualRes: => Either[SqlppError, TemplateOutput]): Assertion = {
+                    actualRes: => String,
+                    expectedRes: => String): Assertion = {
+
+    assertTemplateEngineTest(Right(actualRes), Right(expectedRes))
+  }
+
+  protected def assertTemplateEngineTest(
+                    actualRes: => Either[SqlppError, TemplateOutput],
+                    expectedRes: => Either[SqlppError, TemplateOutput]): Assertion = {
 
     val res = for {
       expected <- expectedRes

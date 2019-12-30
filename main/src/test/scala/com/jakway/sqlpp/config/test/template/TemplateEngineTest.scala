@@ -4,11 +4,15 @@ import java.io.{ByteArrayInputStream, InputStream, StringWriter, Writer}
 import java.nio.charset.StandardCharsets
 
 import com.jakway.sqlpp.config.test.WithDefaultTestConfig
+import com.jakway.sqlpp.config.test.error.TestError
+import com.jakway.sqlpp.config.test.template.TemplateEngineTest.CannotFindBackendResultError
+import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.BackendResult
 import com.jakway.sqlpp.config.test.util.{TemplateTestUtil, TestUtil}
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.{TemplateEngine, ValueSource}
 import com.jakway.sqlpp.template.backend.Backend
+import org.scalatest.Assertion
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -21,6 +25,12 @@ abstract class TemplateEngineTest(val testResource: String,
     with TemplateEngineTestAsserter
     with TemplateTestUtil
     with WithDefaultTestConfig {
+
+
+  //TODO
+  protected def printTestSubject: String = ???
+  protected def printBackendTestAction(backend: Backend): String = ???
+
 
   protected val loaderTypes: Set[LoaderType] = {
     import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders
@@ -64,6 +74,33 @@ abstract class TemplateEngineTest(val testResource: String,
     forMap.mapValues(x => new StringWriter(initialSize))
   }
 
+  private def checkTestOutput(writers: Map[Backend, StringWriter],
+                              expectedResults: Map[Backend, BackendResult]): Unit = {
+
+    //get results from the writers
+    val results = writers.mapValues(_.toString)
+
+    results should have size expectedResults.size
+
+    expectedResults.foreach {
+      case (thisBackend, thisExpectedResult) => {
+
+        //new test
+        printTestSubject should printBackendTestAction(thisBackend) in {
+          val actual = writers.get(thisBackend) match {
+            case Some(x) => Right(x.toString)
+            case None => Left(
+              new CannotFindBackendResultError(
+                s"Could not find template output for backend $thisBackend"))
+          }
+
+          assertTemplateEngineTest(actual, Right(thisExpectedResult))
+        }
+      }
+    }
+
+  }
+
   protected def runTests():
      Either[SqlppError, Unit] = {
 
@@ -95,19 +132,22 @@ abstract class TemplateEngineTest(val testResource: String,
         template,
         ioMap)
     } yield {
-      //TODO: check results
-      {}
+      checkTestOutput(swMap, tests.expectedResults)
     }
-
-
-    //TODO
-    ???
   }
 
   testName should "pass template engine tests" in {
+    runTests() should be ('right)
   }
 }
 
 object TemplateEngineTest {
   val defaultStringWriterInitialSize: Int = 4096
+
+  class TemplateEngineTestError(override val msg: String)
+    extends TestError(msg)
+
+  class CannotFindBackendResultError(override val msg: String)
+    extends TemplateEngineTestError(msg)
+
 }
