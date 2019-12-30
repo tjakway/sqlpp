@@ -105,9 +105,9 @@ object Main {
     } yield {}
   }
 
-  private val resourceLoaders: Set[LoaderType] = Set {
+  private val resourceLoaders: Set[LoaderType] = Set(
     ResourceLoaderConfig.StandardResourceLoaders.ClassLoader
-  }
+  )
 
   private def getTemplateEngine: Either[SqlppError, TemplateEngine] = {
     TemplateEngine.apply(
