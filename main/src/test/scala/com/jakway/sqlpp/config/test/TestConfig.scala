@@ -1,9 +1,11 @@
 package com.jakway.sqlpp.config.test
 
+import java.io.InputStream
 import java.nio.charset.StandardCharsets
 
 import com.jakway.sqlpp.config.Defaults
 import com.jakway.sqlpp.config.checked.Config
+import com.jakway.sqlpp.config.output.OutputTarget
 import com.jakway.sqlpp.config.test.TestConfig.ReadTemplateEngineTestOptions
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.backend.Backend
@@ -29,8 +31,13 @@ trait TestConfig extends HasTestBackends {
 }
 
 object TestConfig {
+  //*** replace with actual input stream in each test ***
+  val defaultSource: InputStream = null
+  val defaultOutputTargets: Seq[OutputTarget] = Seq.empty
+
   val default: TestConfig = new TestConfig {
-    override val config: Config = Config.default
+    override val config: Config =
+      Defaults.Config.default(defaultSource, defaultOutputTargets)
 
     override def getTestBackends: Either[SqlppError, Set[Backend]] = {
       getDefaultTestBackends
