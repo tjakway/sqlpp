@@ -3,6 +3,7 @@ package com.jakway.sqlpp.config.test.template
 import java.util.Formatter
 
 import com.jakway.sqlpp.config.test.template.TemplateEngineTestAsserter.DocumentMatcher
+import com.jakway.sqlpp.config.test.util.StringCmpFunction
 import com.jakway.sqlpp.error.SqlppError
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
@@ -12,6 +13,8 @@ import scala.collection.immutable.StringOps
 
 trait TemplateEngineTestAsserter { this: Matchers =>
   type TemplateOutput = String
+
+  def stringCmpFunction: StringCmpFunction = StringCmpFunction.StrictEquality
 
   protected def assertTemplateEngineTest(
                     actualRes: String,
@@ -34,27 +37,24 @@ trait TemplateEngineTestAsserter { this: Matchers =>
     actual should matchExpectedTemplateOutput(expected)
   }
 
-  private  def matchExpectedTemplateOutput(expected: TemplateOutput) =
-    new DocumentMatcher(expected)
-
-  private def matches(expected: TemplateOutput,
-                        actual: TemplateOutput): MatchResult = {
-    new DocumentMatcher(expected).apply(actual)
-  }
+  protected def matchExpectedTemplateOutput(expected: TemplateOutput) =
+    new DocumentMatcher(expected, stringCmpFunction)
 }
 
 object TemplateEngineTestAsserter {
-  class DocumentMatcher(val expected: String)
+  class DocumentMatcher(val expected: String,
+                        val stringCmpFunction: StringCmpFunction)
     extends Matcher[String] {
 
-    protected def formatDocument(str: String): String = {
+    protected def formatDocument(str: String,
+                                 indent: String = "  "): String = {
       //tab-indent
       val fmt: Formatter = {
         val sb = new StringBuffer()
         new Formatter(sb)
       }
       (str: StringOps).lines.foreach { line =>
-        fmt.format("\t%s\n", line)
+        fmt.format("%s%s\n", indent, line)
       }
 
       fmt.toString
@@ -84,7 +84,9 @@ object TemplateEngineTestAsserter {
       val successMsg = resultMsg("matched", expectedDoc, actualDoc)
       val failureMsg = resultMsg("did not match", expectedDoc, actualDoc)
 
-      MatchResult(expectedDoc == actualDoc, failureMsg, successMsg)
+      MatchResult(
+        stringCmpFunction(expectedDoc, actualDoc),
+        failureMsg, successMsg)
     }
   }
 }

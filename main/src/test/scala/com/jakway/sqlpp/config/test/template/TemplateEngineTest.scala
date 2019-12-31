@@ -136,9 +136,7 @@ abstract class TemplateEngineTest(val testResource: String,
     }
   }
 
-  testName should "pass template engine tests" in {
-    runTests() should be ('right)
-  }
+  runTests() should be ('right)
 }
 
 object TemplateEngineTest {
