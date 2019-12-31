@@ -110,10 +110,10 @@ object ResourceLoaderConfig {
                        (description: String,
                         fullyQualifiedClassName: String,
                         pathOption: Option[Seq[String]]): PropertyMap = {
-      val m = Map {
-        s"resource.loader.$name.description" -> description
+      val m = Map(
+        s"resource.loader.$name.description" -> description,
         s"resource.loader.$name.class" -> fullyQualifiedClassName
-      }
+      )
 
       pathOption match {
         case Some(path) => m.updated(s"$name.resource.loader.path", multipleEntries(path))
@@ -122,14 +122,19 @@ object ResourceLoaderConfig {
     }
 
     private def fileEntries(name: String): PropertyMap = {
-      Map {
-        s"resource.loader.$name.cache" -> "false"
+      Map(
+        s"resource.loader.$name.cache" -> "false",
         s"resource.loader.$name.modificationCheckInterval" -> "0"
-      }
+      )
     }
 
-    lazy val stringResourceRepositoryImplClass: String =
+    private lazy val stringResourceRepositoryImplClass: String =
       classOf[org.apache.velocity.runtime.resource.util.StringResourceRepositoryImpl]
+        .getName
+
+
+    private lazy val stringResourceLoaderClass: String =
+      classOf[org.apache.velocity.runtime.resource.loader.StringResourceLoader]
         .getName
 
     private def stringLoaderEntries(stringRepositoryName: String):
@@ -142,7 +147,8 @@ object ResourceLoaderConfig {
       "string.resource.loader.description" ->
         s"SQLPP String Resource Loader << $stringRepositoryName >>",
 
-      "resource.loader.string.class" -> stringResourceRepositoryImplClass,
+      "string.resource.loader.class" -> stringResourceLoaderClass,
+      "string.resource.loader.repository.class" -> stringResourceRepositoryImplClass,
 
       //need to call velocityEngine.getApplicationAttribute(stringRepositoryName)
       //to get the repository
