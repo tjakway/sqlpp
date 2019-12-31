@@ -128,6 +128,10 @@ object ResourceLoaderConfig {
       }
     }
 
+    lazy val stringResourceRepositoryImplClass: String =
+      classOf[org.apache.velocity.runtime.resource.util.StringResourceRepositoryImpl]
+        .getName
+
     private def stringLoaderEntries(stringRepositoryName: String):
       PropertyMap = Map(
 
@@ -138,8 +142,7 @@ object ResourceLoaderConfig {
       "string.resource.loader.description" ->
         s"SQLPP String Resource Loader << $stringRepositoryName >>",
 
-      "resource.loader.string.class" ->
-        "org.apache.velocity.runtime.resource.loader.StringResourceRepositoryImpl",
+      "resource.loader.string.class" -> stringResourceRepositoryImplClass,
 
       //need to call velocityEngine.getApplicationAttribute(stringRepositoryName)
       //to get the repository
