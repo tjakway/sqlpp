@@ -34,6 +34,8 @@ trait TemplateEngineTestAsserter { this: Matchers =>
 
     res should be ('right)
     val (expected, actual) = res.right.get
+
+    actual.length should be >0
     actual should matchExpectedTemplateOutput(expected)
   }
 

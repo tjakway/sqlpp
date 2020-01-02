@@ -1,11 +1,22 @@
 package com.jakway.sqlpp.error
 
+import java.io.{PrintWriter, StringWriter}
 import java.util.Formatter
 
 class SqlppError(val msg: String)
   extends RuntimeException(msg)
 
 object SqlppError {
+  private def stackTraceToString(throwable: Throwable): String = {
+    //see https://stackoverflow.com/questions/1149703/how-can-i-convert-a-stack-trace-to-a-string
+
+    val sw = new StringWriter()
+    val pw = new PrintWriter(sw)
+
+    throwable.printStackTrace(pw)
+    sw.toString
+  }
+
   /**
    * put each error on a separate tab-indented line
    * @param errors
@@ -26,12 +37,10 @@ object SqlppError {
   }
 
   def formatThrowable(t: Throwable): String = {
-    //TODO: print stack trace, etc.
-    t.toString
+    stackTraceToString(t)
   }
 
   def formatThrowableCause(t: Throwable): String = {
-    //TODO
-    t.toString
+    "Caused by " + stackTraceToString(t)
   }
 }
