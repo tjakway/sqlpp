@@ -23,7 +23,11 @@ class StringRepositoryProperties
     Set(StandardResourceLoaders.StringLoader)
 
   property("Insert and retrieve the generated strings") {
-    forAll(genStringRepoTest) { test =>
+    forAll(genStringRepoTest(
+      Gen.const(
+        testConfig.templateStringInfo.stringResourceRepositoryName),
+      Gen.const(testConfig.encoding))) { test =>
+      
       val res = for {
         templateEngine <- getTemplateEngine(testConfig)
         _ <- insertAllTemplates(
@@ -40,15 +44,14 @@ class StringRepositoryProperties
 }
 
 object StringRepositoryProperties {
-  class StringRepoTest(val toProcess: Map[String, String],
-                       val repositoryName: String,
-                       val encoding: String)
+  case class StringRepoTest(toProcess: Map[String, String],
+                            repositoryName: String,
+                            encoding: String)
 
-  private val genRepositoryName: Gen[String] = Gen.alphaStr
-
-  val genStringRepoTest: Gen[StringRepoTest] = {
+  def genStringRepoTest(genRepositoryName: Gen[String],
+                        genEncoding: Gen[String]): Gen[StringRepoTest] = {
     genRepositoryName.flatMap { repositoryName =>
-      GenTestConfig.genEncoding.flatMap { encoding =>
+      genEncoding.flatMap { encoding =>
         Gen.listOf(Gen.alphaNumStr).map { values =>
           val m: Map[String, String] = values.map { thisValue =>
             //unfortunately no elegant way to return errors in a Gen,
@@ -56,7 +59,7 @@ object StringRepositoryProperties {
             (TemplateTestUtil.getTemplateSourceHash(thisValue).right.get, thisValue)
           }.toMap
 
-          new StringRepoTest(m, repositoryName, encoding)
+          StringRepoTest(m, repositoryName, encoding)
         }
       }
     }
