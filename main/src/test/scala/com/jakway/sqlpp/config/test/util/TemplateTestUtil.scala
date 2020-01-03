@@ -9,7 +9,7 @@ import com.jakway.sqlpp.config.test.error.TestError
 import com.jakway.sqlpp.config.test.util.TemplateTestUtil.HashTemplateSourceError
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.TemplateEngine
-import com.jakway.sqlpp.util.TryToEither
+import com.jakway.sqlpp.util.{HexEncode, TryToEither}
 
 import scala.util.Try
 
@@ -35,7 +35,7 @@ trait TemplateTestUtil {
         val hash = digest.digest(
           templateString.getBytes(StandardCharsets.UTF_8.displayName()))
 
-        Base64.getEncoder.encodeToString(hash)
+        HexEncode.bytesToHex(hash)
       }
     }
   }
