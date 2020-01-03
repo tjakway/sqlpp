@@ -3,6 +3,7 @@ package com.jakway.sqlpp.config.test.template
 import com.jakway.sqlpp.config.test.TestConfig.ReadTemplateEngineTestOptions
 import com.jakway.sqlpp.config.test.template.ParseTest.Errors.{AttributeError, ElementError, UnexpectedElementError}
 import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.{BackendName, BackendResult, RequiredBackendError}
+import com.jakway.sqlpp.config.test.util.LogEither
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.backend.Backend
 import javax.xml.parsers.DocumentBuilderFactory
@@ -14,9 +15,9 @@ import scala.collection.immutable.StringOps
 import scala.xml.InputSource
 
 
-class TemplateEngineTestSetWithBackends(val settings: TemplateEngineTestSet.Settings)
-                                       (val input: String,
-                                        val expectedResults: Map[Backend, BackendResult])
+case class TemplateEngineTestSetWithBackends(settings: TemplateEngineTestSet.Settings,
+                                             input: String,
+                                             expectedResults: Map[Backend, BackendResult])
 
 
 class TemplateEngineTestSet(val settings: TemplateEngineTestSet.Settings)
@@ -63,13 +64,18 @@ class TemplateEngineTestSet(val settings: TemplateEngineTestSet.Settings)
       new RequiredBackendError(errMsg(s"Expected to find a backend for" +
         s" every test case (${expectedResults.size} backends)"))
 
-    res
+    val associatedBackendsRes = res
       .filterOrElse(_.size > 0, needAtLeastOneBackendError)
       .filterOrElse(_.size == expectedResults.size, needAllBackendsError)
       .map { foundBackends =>
-        new TemplateEngineTestSetWithBackends(settings)(
+        TemplateEngineTestSetWithBackends(settings,
           input, foundBackends)
       }
+
+    LogEither(logger,
+      associatedBackendsRes, "Associate backends result: %s")
+
+    associatedBackendsRes
   }
 }
 
@@ -91,6 +97,8 @@ object TemplateEngineTestSet {
 }
 
 object ParseTest {
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+
   val newlineReplacement: String = " "
 
   object Names {
@@ -293,16 +301,30 @@ object ParseTest {
   }
 
 
+  /**
+   * master function
+   * @param testLocation
+   * @return
+   */
   def readTest(testLocation: InputSource): Either[SqlppError, TemplateEngineTestSet] = {
     val documentBuilderFactory = DocumentBuilderFactory.newInstance()
     val documentBuilder = documentBuilderFactory.newDocumentBuilder()
     val document = documentBuilder.parse(testLocation)
 
-    ParseDocument(document)
+    val res = ParseDocument(document)
       //handle normalizeTestResults flag
       .map { res =>
         normalize(res, res.settings.normalized)
       }
+
+    lazy val msg: String = "ParseTest result: " + res
+    //increase level on failure
+    res match {
+      case Right(_) => logger.debug(msg)
+      case Left(_) => logger.error(msg)
+    }
+
+    res
   }
 
   def readTest(testLocation: InputSource,

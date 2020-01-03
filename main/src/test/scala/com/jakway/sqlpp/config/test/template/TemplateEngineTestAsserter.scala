@@ -8,6 +8,7 @@ import com.jakway.sqlpp.error.SqlppError
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.matchers.{MatchResult, Matcher}
+import org.slf4j.LoggerFactory
 
 import scala.collection.immutable.StringOps
 
@@ -34,6 +35,10 @@ trait TemplateEngineTestAsserter { this: Matchers =>
 
     res should be ('right)
     val (expected, actual) = res.right.get
+
+    val logger = LoggerFactory.getLogger(getClass)
+    logger.debug(s"expected: $expected")
+    logger.debug(s"actual: $actual")
 
     actual.length should be >0
     actual should matchExpectedTemplateOutput(expected)

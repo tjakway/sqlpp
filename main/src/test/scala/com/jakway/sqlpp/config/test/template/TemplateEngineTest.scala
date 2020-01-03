@@ -25,7 +25,6 @@ abstract class TemplateEngineTest(val testResource: String,
     with TemplateTestUtil
     with WithDefaultTestConfig {
 
-
   protected def printTestSubject: String = testName
   protected def printBackendTestAction(backend: Backend): String =
     s"$backend should pass backend test"
