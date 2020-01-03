@@ -109,22 +109,24 @@ object ParseTest {
     val backendNameAttribute: String = "backend"
   }
 
-  //don't need to handle newline characters because String.lines already
-  //removes them
-  private def normalizeLine(line: String): String = {
-    line.trim + newlineReplacement
-  }
-
   private def normalize(str: String): String = {
-    val zero: java.lang.StringBuilder = new java.lang.StringBuilder()
 
-    //see https://stackoverflow.com/questions/52815574/scala-12-x-and-java-11-string-lines-how-to-force-the-implicit-conversion-in-a/52815819#52815819
-    (str: StringOps).lines
-      .foreach { thisLine =>
+    def normalizeLines(s: String): String = {
+      val zero: java.lang.StringBuilder = new java.lang.StringBuilder()
 
-        zero.append(thisLine)
-      }
-    zero.toString
+      //see https://stackoverflow.com/questions/52815574/scala-12-x-and-java-11-string-lines-how-to-force-the-implicit-conversion-in-a/52815819#52815819
+      (s: StringOps).lines
+        .foreach { thisLine =>
+
+          zero.append(thisLine)
+        }
+      zero.toString
+    }
+
+    def normalizeWhitespace(s: String): String =
+      s.replaceAll("""\s+""", " ")
+
+    normalizeWhitespace(normalizeLines(str))
   }
 
   private def normalize(test: TemplateEngineTestSet): TemplateEngineTestSet = {
