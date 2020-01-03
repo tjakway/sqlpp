@@ -26,6 +26,17 @@ trait TemplateTestUtil {
         testConfig.additionalVelocityProperties)
   }
 
+  def getTemplateSourceKey(templateString: String): Either[SqlppError, String] =
+    TemplateTestUtil.getTemplateSourceHash(templateString)
+      .map(hash => keyPrefix + hash)
+}
+
+object TemplateTestUtil {
+  class HashTemplateSourceError(val throwable: Throwable)
+    extends TestError(SqlppError.formatThrowableCause(throwable))
+
+  val hashName: String = "SHA-256"
+
   def getTemplateSourceHash(templateString: String): Either[SqlppError, String] = {
     TryToEither(new HashTemplateSourceError(_)) {
       Try {
@@ -39,13 +50,4 @@ trait TemplateTestUtil {
       }
     }
   }
-
-  def getTemplateSourceKey(templateString: String): Either[SqlppError, String] =
-    getTemplateSourceHash(templateString)
-      .map(hash => keyPrefix + hash)
-}
-
-object TemplateTestUtil {
-  class HashTemplateSourceError(val throwable: Throwable)
-    extends TestError(SqlppError.formatThrowableCause(throwable))
 }

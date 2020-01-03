@@ -33,6 +33,10 @@ class PropertiesResourceBackend(override val names: Set[String],
       Try(getClass.getResourceAsStream(resource))
     }
   }
+
+  override def toString: String = {
+    getClass.getSimpleName + "(" + resource + ")"
+  }
 }
 
 object PropertiesResourceBackend {

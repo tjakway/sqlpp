@@ -1,6 +1,6 @@
 package com.jakway.sqlpp.template
 
-import java.io.{File, InputStream, Writer}
+import java.io.{ByteArrayInputStream, File, InputStream, Writer}
 import java.util.Properties
 
 import com.jakway.sqlpp.error.SqlppError
@@ -87,6 +87,24 @@ trait TemplateEngine {
         Either[SqlppError, Template] =
     (TemplateEngine.GetTemplate.getTemplateFromInputStream _)
       .curried(velocityEngine)
+
+  def loadTemplateFromString: String =>
+        String =>
+        String =>
+        String =>
+        Either[SqlppError, Template] = {
+    templateStr => templateSourceKey => repositoryName => encoding =>
+
+      val asInputStream = new ByteArrayInputStream(
+        templateStr.getBytes(encoding))
+
+      loadTemplateFromInputStream(
+        asInputStream)(
+        templateSourceKey)(
+        repositoryName)(
+        encoding)
+  }
+
 
   private def openOutput: File => Either[SqlppError, Writer] =
     FileUtil.openWriter(encoding, new OpenOutputWriterError(_))
