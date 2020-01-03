@@ -10,9 +10,8 @@ import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.BackendResult
 import com.jakway.sqlpp.config.test.util.{TemplateTestUtil, TestUtil}
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
-import com.jakway.sqlpp.template.{TemplateEngine, ValueSource}
+import com.jakway.sqlpp.template.ValueSource
 import com.jakway.sqlpp.template.backend.Backend
-import org.scalatest.Assertion
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

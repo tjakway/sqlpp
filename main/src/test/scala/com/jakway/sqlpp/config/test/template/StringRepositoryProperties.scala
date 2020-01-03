@@ -1,6 +1,6 @@
 package com.jakway.sqlpp.config.test.template
 
-import com.jakway.sqlpp.config.test.{GenTestConfig, WithDefaultTestConfig}
+import com.jakway.sqlpp.config.test.WithDefaultTestConfig
 import com.jakway.sqlpp.config.test.util.TemplateTestUtil
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders
@@ -11,13 +11,16 @@ import org.scalacheck.Gen
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.propspec.AnyPropSpec
 
+/**
+ * TODO: generate repositoryName (will require generating testConfig)
+ */
 class StringRepositoryProperties
   extends AnyPropSpec
     with Matchers
     with WithDefaultTestConfig
     with TemplateTestUtil {
-  import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks._
   import StringRepositoryProperties._
+  import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks._
 
   private val loaderTypes: Set[LoaderType] =
     Set(StandardResourceLoaders.StringLoader)
@@ -27,7 +30,7 @@ class StringRepositoryProperties
       Gen.const(
         testConfig.templateStringInfo.stringResourceRepositoryName),
       Gen.const(testConfig.encoding))) { test =>
-      
+
       val res = for {
         templateEngine <- getTemplateEngine(testConfig)
         _ <- insertAllTemplates(
