@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets
 
 import com.jakway.sqlpp.config.test.WithDefaultTestConfig
 import com.jakway.sqlpp.config.test.error.TestError
-import com.jakway.sqlpp.config.test.template.TemplateEngineTest.CannotFindBackendResultError
+import com.jakway.sqlpp.config.test.template.TemplateEngineTest.{CannotFindBackendResultError, EmptyBackendResultError}
 import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.BackendResult
 import com.jakway.sqlpp.config.test.util.{TemplateTestUtil, TestUtil}
 import com.jakway.sqlpp.error.SqlppError
@@ -86,7 +86,18 @@ abstract class TemplateEngineTest(val testResource: String,
         //new test
         printTestSubject should printBackendTestAction(thisBackend) in {
           val actual = writers.get(thisBackend) match {
-            case Some(x) => Right(x.toString)
+            case Some(thisWriter) => {
+              val output = thisWriter.toString
+
+              //check that if we got an empty string that we were expecting one
+              if(output.trim.isEmpty && thisExpectedResult.trim.nonEmpty) {
+                Left(new EmptyBackendResultError(
+                  s"$thisWriter returned an unexpected empty string; " +
+                    s"expected: $thisExpectedResult"))
+              } else {
+                Right(output)
+              }
+            }
             case None => Left(
               new CannotFindBackendResultError(
                 s"Could not find template output for backend $thisBackend"))
@@ -145,5 +156,8 @@ object TemplateEngineTest {
 
   class CannotFindBackendResultError(override val msg: String)
     extends TemplateEngineTestError(msg)
+
+  class EmptyBackendResultError(override val msg: String)
+    extends CannotFindBackendResultError(msg)
 
 }
