@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <test normalizeTestWhitespace="true">
-    <input>SELECT TABLE People(id INDEX_TYPE_PK_AUTOINC, name TEXT_TYPE, address TEXT_TYPE)</input>
+    <input>SELECT TABLE People(id $INDEX_TYPE_PK_AUTOINC, name $TEXT_TYPE, address $TEXT_TYPE)</input>
 
     <result backend="defaults">
         SELECT TABLE People(id INTEGER PRIMARY KEY AUTOINCREMENT,
