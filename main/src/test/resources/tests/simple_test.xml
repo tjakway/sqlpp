@@ -14,7 +14,7 @@
                             address TEXT)
     </result>
 
-    <result backend="defaults">
+    <result backend="h2">
         SELECT TABLE People(id INTEGER PRIMARY KEY AUTO_INCREMENT,
                             name VARCHAR(65535),
                             address VARCHAR(65535))
