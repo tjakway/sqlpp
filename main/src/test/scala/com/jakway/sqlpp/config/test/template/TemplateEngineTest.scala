@@ -69,11 +69,21 @@ abstract class TemplateEngineTest(val testResource: String,
                                            .defaultStringWriterInitialSize):
     Map[A, StringWriter] = {
 
-    forMap.mapValues(x => new StringWriter(initialSize))
+    //WARNING: using mapValues breaks the StringWriters!
+    forMap.foldLeft(Map.empty: Map[A, StringWriter]) {
+      case (acc, (key, _)) => {
+        acc.updated(key, new StringWriter())
+      }
+    }
   }
 
   private def checkTestOutput(writers: Map[Backend, StringWriter],
                               expectedResults: Map[Backend, BackendResult]): Unit = {
+
+    //flushing shouldn't do anything but... still
+    writers.foreach {
+      case (_, writer) => writer.flush()
+    }
 
     //get results from the writers
     val results = writers.mapValues(_.toString)
