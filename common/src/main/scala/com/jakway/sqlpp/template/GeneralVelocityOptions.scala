@@ -24,13 +24,27 @@ object GeneralVelocityOptions {
       VelocityConstants.SKIP_INVALID_ITERATOR -> "false"
     )
 
-    val whenVerbose = Seq(
-      VelocityConstants.RESOURCE_MANAGER_LOGWHENFOUND -> "true"
+    //define our verbose options as booleans
+    //then use mirrorOptions to get string maps
+    //of both verbose and quiet options at once
+    val rawVerboseOptions = Seq(
+      VelocityConstants.RESOURCE_MANAGER_LOGWHENFOUND -> true
     )
 
+    val (whenVerbose, whenQuiet) = mirrorOptions(rawVerboseOptions.toMap)
+
     //apply changes, using basicOptions as a starting point
-    mapBranch(whenVerbose)(verbose,
+    mapBranch(whenVerbose, whenQuiet)(verbose,
       mapBranch(whenStrict)(strict, basicOptions.toMap))
+  }
+
+  private def mirrorOptions(options: Map[String, Boolean]):
+    (Seq[(String, String)], Seq[(String, String)]) = {
+
+    val mirroredOptions = options.mapValues(x => !x)
+
+    (options.mapValues(_.toString).toSeq,
+      mirroredOptions.mapValues(_.toString).toSeq)
   }
 
   /**

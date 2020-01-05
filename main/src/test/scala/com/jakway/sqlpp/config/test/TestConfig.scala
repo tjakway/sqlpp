@@ -55,7 +55,7 @@ object TestConfig {
 
     override val extraTemplateOptions: ExtraTemplateOptions = Defaults.extraTemplateOptions
 
-    override val additionalVelocityProperties: PropertyMap = GeneralVelocityOptions(encoding)
+    override val additionalVelocityProperties: PropertyMap = GeneralVelocityOptions(encoding, verbose = false)
   }
 
   def getDefaultTestBackends: Either[SqlppError, Set[Backend]] = Right {
