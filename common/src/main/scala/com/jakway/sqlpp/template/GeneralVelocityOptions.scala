@@ -21,7 +21,8 @@ object GeneralVelocityOptions {
       VelocityConstants.STRICT_MATH -> "true",
       VelocityConstants.VM_ARGUMENTS_STRICT -> "true",
 
-      VelocityConstants.SKIP_INVALID_ITERATOR -> "false"
+      VelocityConstants.SKIP_INVALID_ITERATOR -> "false",
+      VelocityConstants.PARSER_HYPHEN_ALLOWED -> "false"
     )
 
     //define our verbose options as booleans
