@@ -11,7 +11,8 @@ object GeneralVelocityOptions {
     import org.apache.velocity.runtime.{RuntimeConstants => VelocityConstants}
 
     val basicOptions: Seq[(String, String)] = Seq(
-      VelocityConstants.INPUT_ENCODING -> inputEncoding
+      VelocityConstants.INPUT_ENCODING -> inputEncoding,
+      VelocityConstants.VM_PERM_INLINE_LOCAL -> "true"
     )
 
     val whenStrict = Seq(
