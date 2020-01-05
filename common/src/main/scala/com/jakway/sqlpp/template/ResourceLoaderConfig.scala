@@ -97,6 +97,7 @@ object ResourceLoaderConfig {
   }
 
   object StandardResourceLoaders {
+    private val modificationCheckIntervalString: String = "modification_check_interval"
 
     class StandardResourceLoaderError(override val msg: String)
       extends ResourceLoaderConfigError(msg)
@@ -124,7 +125,7 @@ object ResourceLoaderConfig {
     private def fileEntries(name: String): PropertyMap = {
       Map(
         s"resource.loader.$name.cache" -> "false",
-        s"resource.loader.$name.modificationCheckInterval" -> "0"
+        s"resource.loader.$name.$modificationCheckIntervalString" -> "0"
       )
     }
 
