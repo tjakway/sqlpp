@@ -5,4 +5,5 @@ import com.jakway.sqlpp.config.test.template.TemplateEngineTest
 
 
 class SimpleXMLTest
-  extends TemplateEngineTest(TestResources.Tests.simple)
+  extends TemplateEngineTest(
+    TestResources.Tests.simple, TestResources.Tests.simple)
