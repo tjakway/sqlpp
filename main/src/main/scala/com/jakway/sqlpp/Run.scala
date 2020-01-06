@@ -3,9 +3,7 @@ package com.jakway.sqlpp
 import com.jakway.sqlpp.config.checked
 import com.jakway.sqlpp.error.SqlppError
 
-object Main {
-  def main(args: Array[String]): Unit = apply(args)
-
+object Run {
   def apply(args: Array[String]): Unit = {
     //TODO: parse config
   }
