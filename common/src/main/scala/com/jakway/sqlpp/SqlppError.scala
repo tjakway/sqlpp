@@ -4,7 +4,9 @@ import java.io.{PrintWriter, StringWriter}
 import java.util.Formatter
 
 class SqlppError(val msg: String)
-  extends RuntimeException(msg)
+  extends RuntimeException(msg) {
+  def print: String = toString
+}
 
 object SqlppError {
   private def stackTraceToString(throwable: Throwable): String = {
