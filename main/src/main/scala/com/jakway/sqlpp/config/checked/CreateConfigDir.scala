@@ -3,6 +3,7 @@ package com.jakway.sqlpp.config.checked
 import java.io.{BufferedInputStream, BufferedOutputStream, File, FileInputStream, FileOutputStream, InputStream, OutputStream}
 import java.nio.file.Files
 
+import com.jakway.sqlpp.config.Constants
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.config.output.StandardBackendResources
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
@@ -11,7 +12,27 @@ import com.jakway.sqlpp.util.TryToEither
 import scala.util.Try
 
 case class CreateConfigDir(dest: File,
-                           additionalBackends: Set[File] = Set.empty)
+                           additionalBackends: Set[File] = Set.empty) {
+
+  lazy val templatesDir: File = new File(dest, Constants.templatesDirName)
+
+  private def mkdir(x: File): Either[SqlppError, Unit] = {
+    val fs: Seq[CheckFile.FileCheckF] =
+      Seq(CheckFile.mkDir,
+        CheckFile.setWritable(true),
+        CheckFile.setReadable(true),
+        CheckFile.setExecutable(true))
+
+    CheckFile.composeAll(fs)(x)
+  }
+
+  def mkdirs(): Either[SqlppError, Unit] = {
+    for {
+      _ <- mkdir(dest)
+      _ <- mkdir(templatesDir)
+    } yield {}
+  }
+}
 
 
 object CreateConfigDir {
@@ -29,21 +50,12 @@ object CreateConfigDir {
       s"Error copying $resourceDescription to $dest caused by: " +
       SqlppError.formatThrowable(cause))
 
-  private def mkConfigDir(dest: File): Either[SqlppError, Unit] = {
-    val fs: Seq[CheckFile.FileCheckF] =
-      Seq(CheckFile.mkDir,
-        CheckFile.setWritable(true),
-        CheckFile.setReadable(true),
-        CheckFile.setExecutable(true))
-
-    CheckFile.composeAll(fs)(dest)
-  }
-
 
   def allStreams(createConfigDir: CreateConfigDir):
     Either[SqlppError, Set[(String, File, InputStream)]] = {
 
-    def mkDest(fileName: String): File = new File(createConfigDir.dest, fileName)
+    def mkDest(fileName: String): File =
+      new File(createConfigDir.templatesDir, fileName)
 
     def zero: Either[SqlppError, Set[(String, File, InputStream)]] =
       Right(Set.empty)
@@ -87,7 +99,8 @@ object CreateConfigDir {
 
   def apply(createConfigDir: CreateConfigDir): Either[SqlppError, Unit] = {
     for {
-      _ <- mkConfigDir(createConfigDir.dest)
+      //create the config dir we're going to copy backend files into
+      _ <- createConfigDir.mkdirs()
       streams <- allStreams(createConfigDir)
     } yield {
       //copy each backend file to its location in the config dir
