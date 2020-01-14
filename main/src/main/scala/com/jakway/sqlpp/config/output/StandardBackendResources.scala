@@ -11,14 +11,14 @@ object StandardBackendResources {
   class ReadStandardBackendResourceError(val throwable: Throwable)
     extends SqlppError(SqlppError.formatThrowableCause(throwable))
 
-  def getInputStreams: Either[SqlppError, Set[InputStream]] = {
+  def getInputStreamPairs: Either[SqlppError, Set[(String, InputStream)]] = {
     Try {
       Constants
         .StandardBackendResources
         .allResources
-        .map(getClass.getResourceAsStream)
+        .map(xs => (xs._1, getClass.getResourceAsStream(xs._2)))
     } match {
-      case Success(inputStreams) => Right(inputStreams)
+      case Success(x) => Right(x)
       case Failure(t) =>
         Left(new ReadStandardBackendResourceError(t))
     }

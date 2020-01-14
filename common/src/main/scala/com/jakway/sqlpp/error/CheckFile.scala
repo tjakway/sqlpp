@@ -175,4 +175,18 @@ object CheckFile {
     }
   }
 
+  /**
+   * turn a sequence of FileCheckF into one FileCheckF
+   * @param fs
+   * @return
+   */
+  def composeAll(fs: Seq[FileCheckF]): FileCheckF = in => {
+    val zero: Either[SqlppError, Unit] = Right({})
+    fs.foldLeft(zero) {
+      case (eAcc, thisFunction) => eAcc.flatMap { ignored =>
+        thisFunction(in)
+      }
+    }
+  }
+
 }

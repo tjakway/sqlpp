@@ -1,6 +1,9 @@
 package com.jakway.sqlpp
 
+import java.io.{File, InputStream}
+
 import com.jakway.sqlpp.config.checked
+import com.jakway.sqlpp.config.checked.CreateConfigDir
 import com.jakway.sqlpp.error.SqlppError
 
 object Run {

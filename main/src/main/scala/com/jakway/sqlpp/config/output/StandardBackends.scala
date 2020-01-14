@@ -30,10 +30,11 @@ object StandardBackends {
 
 
     import Constants.StandardBackendResources
+    def f = (loadBackend _).tupled
     new StandardBackends(
-      loadBackend("postgres", StandardBackendResources.postgres),
-      loadBackend("h2", StandardBackendResources.h2),
-      loadBackend("defaults", StandardBackendResources.defaults))
+      f(StandardBackendResources.postgres),
+      f(StandardBackendResources.h2),
+      f(StandardBackendResources.defaults))
   }
 }
 

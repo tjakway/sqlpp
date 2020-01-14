@@ -17,13 +17,16 @@ object Constants {
   val templatesDirName: String = "templates"
 
   object StandardBackendResources {
-    private def prefix(resName: String): String = "/gen/" + resName
+    type ResourceType = (String, String)
 
-    val postgres: String = prefix("postgres.xml")
-    val h2: String = prefix("h2.xml")
-    val defaults: String = prefix("defaults.xml")
+    private def prefix(resName: String): (String, String) =
+      (resName, "/gen/" + resName)
 
-    lazy val allResources: Set[String] = Set(
+    val postgres: ResourceType = prefix("postgres.xml")
+    val h2: ResourceType = prefix("h2.xml")
+    val defaults: ResourceType = prefix("defaults.xml")
+
+    lazy val allResources: Set[ResourceType] = Set(
       postgres, h2, defaults
     )
   }
