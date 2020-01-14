@@ -1,6 +1,6 @@
 package com.jakway.sqlpp.config.checked
 
-import java.io.{BufferedInputStream, BufferedOutputStream, File, FileInputStream, FileOutputStream, InputStream, OutputStream}
+import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.file.Files
 
 import com.jakway.sqlpp.config.Constants
