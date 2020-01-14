@@ -1,7 +1,5 @@
 package com.jakway.sqlpp.config
 
-import java.io.InputStream
-
 /**
  * for values not intended to be overridden
  */
