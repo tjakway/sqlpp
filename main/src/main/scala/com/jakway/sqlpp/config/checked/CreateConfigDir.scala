@@ -51,7 +51,7 @@ object CreateConfigDir {
       SqlppError.formatThrowable(cause))
 
 
-  def allStreams(createConfigDir: CreateConfigDir):
+  private def allStreams(createConfigDir: CreateConfigDir):
     Either[SqlppError, Set[(String, File, InputStream)]] = {
 
     def mkDest(fileName: String): File =
