@@ -11,4 +11,14 @@ object Constants {
    * see [[com.jakway.sqlpp.config.unchecked.GetEnvVariableArgs]]
    */
   val additionalArgsEnvVarName: String = "SQLPP_ARGS"
+
+  val templatesDirName: String = "templates"
+
+  object StandardBackendResources {
+    private def prefix(resName: String): String = "/gen/" + resName
+
+    val postgres: String = prefix("postgres.xml")
+    val h2: String = prefix("h2.xml")
+    val defaults: String = prefix("defaults.xml")
+  }
 }
