@@ -1,17 +1,17 @@
 package com.jakway.sqlpp.config.test.gen
 
-import java.io.File
-
 import org.scalacheck.Gen
 
-trait GenTemplate {
-  def templateKeys: Set[String]
+class GenTemplate(val identifiers: Set[String],
+                  val excludeIdentifiers: Set[String] = Set.empty) {
+
+  def apply(): Gen[String] = genTemplate
 
   val genTemplate: Gen[String] =
     Gen.listOf(genSentence).map(_.mkString)
 
   lazy val genWord: Gen[String] = Gen.lzy {
-    Gen.oneOf(Gen.alphaNumStr, Gen.oneOf(templateKeys))
+    Gen.oneOf(Gen.alphaNumStr, Gen.oneOf(identifiers))
   }
 
   lazy val genSeparator: Gen[String] = {
