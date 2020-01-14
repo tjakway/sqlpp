@@ -1,5 +1,7 @@
 package com.jakway.sqlpp.config
 
+import java.io.InputStream
+
 /**
  * for values not intended to be overridden
  */
@@ -20,5 +22,9 @@ object Constants {
     val postgres: String = prefix("postgres.xml")
     val h2: String = prefix("h2.xml")
     val defaults: String = prefix("defaults.xml")
+
+    lazy val allResources: Set[String] = Set(
+      postgres, h2, defaults
+    )
   }
 }
