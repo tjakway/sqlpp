@@ -1,17 +1,19 @@
 package com.jakway.sqlpp.config.test.template
 
 import com.jakway.sqlpp.config.test.TestConfig.ReadTemplateEngineTestOptions
-import com.jakway.sqlpp.config.test.template.ParseTest.Errors.{AttributeError, ElementError, UnexpectedElementError}
+import com.jakway.sqlpp.config.test.template.ParseTest.Errors.{AttributeError, ElementError, ParseAttributeContentsError, UnexpectedElementError}
 import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.{BackendName, BackendResult, RequiredBackendError}
 import com.jakway.sqlpp.config.test.util.LogEither
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.backend.Backend
+import com.jakway.sqlpp.util.TryToEither
 import javax.xml.parsers.DocumentBuilderFactory
 import org.slf4j.{Logger, LoggerFactory}
 import org.w3c.dom.{Document, Element, Node, NodeList}
 
 import scala.annotation.tailrec
 import scala.collection.immutable.StringOps
+import scala.util.Try
 import scala.xml.InputSource
 
 
@@ -104,6 +106,7 @@ object ParseTest {
   object Names {
     val rootNode: String = "test"
     val normalizeTestWhitespace: String = "normalizeTestWhitespace"
+    val allowEmpty: String = "allowEmpty"
     val testInputNode: String = "input"
     val testResultElement: String = "result"
     val backendNameAttribute: String = "backend"
@@ -151,6 +154,14 @@ object ParseTest {
     class AttributeError(override val msg: String)
       extends ParseTestError(msg)
 
+    class ParseAttributeContentsError(val attrName: String,
+                                      val attrValue: String,
+                                      val throwable: Throwable)
+      extends AttributeError(
+        s"Error parsing attribute $attrName" +
+          s" with contents $attrValue: " +
+          SqlppError.formatThrowable(throwable))
+
     class ElementError(override val msg: String)
       extends ParseTestError(msg)
 
@@ -162,22 +173,56 @@ object ParseTest {
   private object ParseDocument {
     val defaultNormalizeTestWhitespaceAttribute: Boolean = false
 
+    object ParseAttributeContents {
+      /**
+       * for string-valued attributes
+       * @return
+       */
+      def stringF: String => Either[SqlppError, String] =
+        x => Right(x)
+
+      def booleanF(attrName: String): String => Either[SqlppError, Boolean] = {
+        x => TryToEither(
+          new ParseAttributeContentsError(attrName, x, _))(
+          Try(x.toBoolean))
+      }
+    }
+
+
+    private def parseAttribute[A](elem: Element,
+                                  attrName: String,
+                                  defaultValue: Option[A],
+                                  parseF: String => Either[SqlppError, A]):
+      Either[SqlppError, A] = {
+
+      lazy val emptyError =
+        Left(new AttributeError(s"Attribute with name $attrName is empty"))
+
+      if(elem.hasAttribute(attrName)) {
+        val attrValue = elem.getAttribute(attrName).trim
+
+        if(attrValue.nonEmpty) {
+          parseF(attrValue)
+        } else {
+          emptyError
+        }
+      } else {
+        defaultValue match {
+          case Some(x) => Right(x)
+          case None => emptyError
+        }
+      }
+    }
+
     def parseNormalizeTestWhitespaceAttribute(root: Element):
       Either[SqlppError, Boolean] = {
 
       val attrName = Names.normalizeTestWhitespace
 
-      if(root.hasAttribute(attrName)) {
-        val attrValue = root.getAttribute(attrName).trim
-
-        if(attrValue.nonEmpty) {
-          Right(attrValue.toBoolean)
-        } else {
-          Left(new AttributeError(s"Attribute with name $attrValue is empty"))
-        }
-      } else {
-        Right(defaultNormalizeTestWhitespaceAttribute)
-      }
+      parseAttribute[Boolean](root,
+        attrName,
+        Some(defaultNormalizeTestWhitespaceAttribute),
+        ParseAttributeContents.booleanF(attrName))
     }
 
     def parseSettings(root: Element): Either[SqlppError, TemplateEngineTestSet.Settings] = {
