@@ -25,7 +25,6 @@ case class TemplateEngineTestSetWithBackends(settings: TemplateEngineTestSet.Set
 class TemplateEngineTestSet(val settings: TemplateEngineTestSet.Settings)
                            (val input: String,
                             val expectedResults: Map[BackendName, BackendResult]) {
-
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def associateBackends(backends: Set[Backend],
@@ -85,10 +84,17 @@ object TemplateEngineTestSet {
   type BackendName = String
   type BackendResult = String
 
-  class Settings(val normalized: Boolean)
+  class Settings(val normalized: Boolean,
+                 val allowEmptyTests: Boolean)
 
   object Settings {
-    val default: Settings = new Settings(false)
+    val defaultNormalizeTestWhitespaceAttribute: Boolean = false
+    val defaultAllowEmptyTests: Boolean = false
+
+    val default: Settings =
+      new Settings(
+        defaultNormalizeTestWhitespaceAttribute,
+        defaultAllowEmptyTests)
   }
 
   class TemplateEngineTestSetError(override val msg: String)
@@ -99,6 +105,9 @@ object TemplateEngineTestSet {
 }
 
 object ParseTest {
+  //import default fields
+  import TemplateEngineTestSet.Settings._
+
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   val newlineReplacement: String = " "
@@ -106,7 +115,7 @@ object ParseTest {
   object Names {
     val rootNode: String = "test"
     val normalizeTestWhitespace: String = "normalizeTestWhitespace"
-    val allowEmpty: String = "allowEmpty"
+    val allowEmptyTests: String = "allowEmptyTests"
     val testInputNode: String = "input"
     val testResultElement: String = "result"
     val backendNameAttribute: String = "backend"
@@ -171,7 +180,6 @@ object ParseTest {
   }
 
   private object ParseDocument {
-    val defaultNormalizeTestWhitespaceAttribute: Boolean = false
 
     object ParseAttributeContents {
       /**
@@ -214,7 +222,7 @@ object ParseTest {
       }
     }
 
-    def parseNormalizeTestWhitespaceAttribute(root: Element):
+    private def parseNormalizeTestWhitespaceAttribute(root: Element):
       Either[SqlppError, Boolean] = {
 
       val attrName = Names.normalizeTestWhitespace
@@ -225,8 +233,24 @@ object ParseTest {
         ParseAttributeContents.booleanF(attrName))
     }
 
+    private def parseAllowEmptyTests(root: Element):
+      Either[SqlppError, Boolean] = {
+
+      val attrName = Names.allowEmptyTests
+
+      parseAttribute[Boolean](root,
+        attrName,
+        Some(defaultAllowEmptyTests),
+        ParseAttributeContents.booleanF(attrName))
+    }
+
     def parseSettings(root: Element): Either[SqlppError, TemplateEngineTestSet.Settings] = {
-      parseNormalizeTestWhitespaceAttribute(root).map(new TemplateEngineTestSet.Settings(_))
+      for {
+        normalize <- parseNormalizeTestWhitespaceAttribute(root)
+        allowEmptyTests <- parseAllowEmptyTests(root)
+      } yield {
+        new TemplateEngineTestSet.Settings(normalize, allowEmptyTests)
+      }
     }
 
     object Queries {
