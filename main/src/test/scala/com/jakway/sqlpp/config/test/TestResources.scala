@@ -22,6 +22,8 @@ object TestResources {
     private def apply(testName: String): String = subdir(testsDir, testName)
 
     val simple: String = apply("simple_test.xml")
+    val empty: String = apply("empty.xml")
+    val allVariables: String = apply("all_variables.xml")
   }
 
   class OpenTestResourceError(override val msg: String)
