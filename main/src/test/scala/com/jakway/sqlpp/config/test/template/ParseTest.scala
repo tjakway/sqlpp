@@ -294,8 +294,19 @@ object ParseTest {
       }
 
       def getNodeValue(onError: => SqlppError)
-                      (e: Element): Either[SqlppError, String] = {
-        Option(e.getTextContent).filter(_.trim.nonEmpty) match {
+                      (e: Element,
+                       allowEmpty: Boolean = defaultAllowEmptyTests):
+        Either[SqlppError, String] = {
+
+        def optFilter: Option[String] => Option[String] = { x =>
+          if(allowEmpty) {
+            x
+          } else {
+            x.filter(_.trim.nonEmpty)
+          }
+        }
+
+        optFilter(Option(e.getTextContent)) match {
           case Some(x) => Right(x.trim)
           case None => Left(onError)
         }
@@ -305,7 +316,10 @@ object ParseTest {
 
 
 
-    def parseResultNode(resultNode: Element): Either[SqlppError, (String, String)] = {
+    def parseResultNode(resultNode: Element,
+                        allowEmpty: Boolean = defaultAllowEmptyTests):
+      Either[SqlppError, (String, String)] = {
+
       lazy val backendNameAttrError =
         new AttributeError(s"Expected result node to have a" +
           " \"" + Names.backendNameAttribute + "\" attribute containing" +
@@ -317,37 +331,44 @@ object ParseTest {
       for {
         _ <- expectName(Names.testResultElement, resultNode)
         backendName <- getAttribute(backendNameAttrError)(Names.backendNameAttribute, resultNode)
-        testResult <- getNodeValue(noTestResultError)(resultNode)
+        testResult <- getNodeValue(noTestResultError)(resultNode, allowEmpty)
       } yield {
         (backendName, testResult)
       }
     }
 
-    def parseInputNode(inputNode: Element): Either[SqlppError, String] = {
+    def parseInputNode(inputNode: Element,
+                       allowEmpty: Boolean):
+      Either[SqlppError, String] = {
+
       val noTestInput = new ElementError(s"Expected ${Names.testInputNode} " +
         s"$inputNode to contain the test input")
       for {
         _ <- expectName(Names.testInputNode, inputNode)
-        res <- getNodeValue(noTestInput)(inputNode)
+        res <- getNodeValue(noTestInput)(inputNode, allowEmpty)
       } yield {
         res
       }
     }
 
-    def parseInputNode(inputNodes: Seq[Element]): Either[SqlppError, String] = {
+    def parseInputNode(inputNodes: Seq[Element],
+                       allowEmpty: Boolean): Either[SqlppError, String] = {
       if(inputNodes.length == 1) {
-        parseInputNode(inputNodes.head)
+        parseInputNode(inputNodes.head, allowEmpty)
       } else {
         Left(new ElementError(s"Expected there to be only 1 " +
           s"${Names.testInputNode} defining the test case"))
       }
     }
 
-    def parseResultNodes(resultNodes: Seq[Element]): Either[SqlppError, Seq[(String, String)]] = {
+    def parseResultNodes(resultNodes: Seq[Element],
+                         allowEmpty: Boolean = defaultAllowEmptyTests):
+      Either[SqlppError, Seq[(String, String)]] = {
+
       val empty: Either[SqlppError, Seq[(String, String)]] = Right(Seq.empty)
       resultNodes.foldLeft(empty) {
         case (eAcc, thisNode) => eAcc.flatMap { acc =>
-          parseResultNode(thisNode).map(res => acc :+ res)
+          parseResultNode(thisNode, allowEmpty).map(res => acc :+ res)
         }
       }
     }
@@ -357,9 +378,11 @@ object ParseTest {
         settings <- parseSettings(root)
         _ <- expectName(Names.rootNode, root)
         rawInputNodes = getChildrenWithName(Names.testInputNode, root)
-        testInput <- parseInputNode(rawInputNodes)
+        testInput <- parseInputNode(rawInputNodes, settings.allowEmptyTests)
         rawResultNodes = getChildrenWithName(Names.testResultElement, root)
-        resultNodeValues <- parseResultNodes(rawResultNodes)
+        resultNodeValues <- parseResultNodes(
+          rawResultNodes,
+          settings.allowEmptyTests)
       } yield {
         new TemplateEngineTestSet(settings)(testInput, resultNodeValues.toMap)
       }
