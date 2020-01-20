@@ -17,9 +17,13 @@ import scala.util.Try
 import scala.xml.InputSource
 
 
-case class TemplateEngineTestSetWithBackends(settings: TemplateEngineTestSet.Settings,
+case class TemplateEngineTestSetWithBackends(settings: TemplateEngineTestSetWithBackends.Settings,
                                              input: String,
                                              expectedResults: Map[Backend, BackendResult])
+
+object TemplateEngineTestSetWithBackends {
+  type Settings = TemplateEngineTestSet.Settings
+}
 
 
 class TemplateEngineTestSet(val settings: TemplateEngineTestSet.Settings)

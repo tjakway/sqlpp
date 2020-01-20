@@ -19,14 +19,16 @@ trait TemplateEngineTestAsserter { this: Matchers =>
 
   protected def assertTemplateEngineTest(
                     actualRes: String,
-                    expectedRes: String): Assertion = {
+                    expectedRes: String,
+                    allowEmpty: Boolean): Assertion = {
 
-    assertTemplateEngineTest(Right(actualRes), Right(expectedRes))
+    assertTemplateEngineTest(Right(actualRes), Right(expectedRes), allowEmpty)
   }
 
   protected def assertTemplateEngineTest(
                     actualRes: Either[SqlppError, TemplateOutput],
-                    expectedRes: Either[SqlppError, TemplateOutput]): Assertion = {
+                    expectedRes: Either[SqlppError, TemplateOutput],
+                    allowEmpty: Boolean): Assertion = {
 
     val res = for {
       expected <- expectedRes
@@ -40,7 +42,11 @@ trait TemplateEngineTestAsserter { this: Matchers =>
     logger.debug(s"expected: $expected")
     logger.debug(s"actual: $actual")
 
-    actual.length should be >0
+    if(allowEmpty) {
+      actual.length should be >= 0
+    } else {
+      actual.length should be > 0
+    }
     actual should matchExpectedTemplateOutput(expected)
   }
 

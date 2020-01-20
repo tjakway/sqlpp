@@ -78,7 +78,8 @@ abstract class TemplateEngineTest(val testResource: String,
   }
 
   private def checkTestOutput(writers: Map[Backend, StringWriter],
-                              expectedResults: Map[Backend, BackendResult]): Unit = {
+                              expectedResults: Map[Backend, BackendResult],
+                              settings: TemplateEngineTestSetWithBackends.Settings): Unit = {
 
     //flushing shouldn't do anything but... still
     writers.foreach {
@@ -113,7 +114,8 @@ abstract class TemplateEngineTest(val testResource: String,
                 s"Could not find template output for backend $thisBackend"))
           }
 
-          assertTemplateEngineTest(actual, Right(thisExpectedResult))
+          assertTemplateEngineTest(
+            actual, Right(thisExpectedResult), settings.allowEmptyTests)
         }
       }
     }
@@ -151,7 +153,7 @@ abstract class TemplateEngineTest(val testResource: String,
         template,
         ioMap)
     } yield {
-      checkTestOutput(swMap, tests.expectedResults)
+      checkTestOutput(swMap, tests.expectedResults, tests.settings)
     }
   }
 
