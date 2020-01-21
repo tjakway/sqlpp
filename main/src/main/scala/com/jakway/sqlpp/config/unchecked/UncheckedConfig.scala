@@ -2,9 +2,8 @@ package com.jakway.sqlpp.config.unchecked
 
 import java.io.File
 
-import com.jakway.sqlpp.config.{Constants, Defaults, VerbosityLevel}
 import com.jakway.sqlpp.config.Defaults.{UncheckedConfig => UncheckedConfigDefaults}
-import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
+import com.jakway.sqlpp.config.{Constants, Defaults, VerbosityLevel}
 
 case class UncheckedConfig(verbosityLevel: VerbosityLevel =
                              Defaults.VerbosityLevel.default,
