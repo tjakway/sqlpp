@@ -7,7 +7,7 @@ package sqlpp.project {
       Seq("org.slf4j" % "slf4j-parent" % "1.7.6",
           "ch.qos.logback"  %  "logback-classic"    % "1.2.1")
 
-    val scopt = Seq("com.github.scopt" %% "scopt" % "3.7.1")
+    val scopt = Seq("com.github.scopt" %% "scopt" % "4.0.0-RC2")
 
     private val scalatestVersion: String = "3.2.0-M2"
 
