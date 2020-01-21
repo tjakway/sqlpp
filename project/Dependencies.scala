@@ -8,6 +8,7 @@ package sqlpp.project {
           "ch.qos.logback"  %  "logback-classic"    % "1.2.1")
 
     val scopt = Seq("com.github.scopt" %% "scopt" % "4.0.0-RC2")
+    val enumeratum = Seq("com.beachape" %% "enumeratum" % "1.5.15")
 
     private val scalatestVersion: String = "3.2.0-M2"
 
@@ -27,6 +28,6 @@ package sqlpp.project {
     val apacheVelocity = Seq(
       "org.apache.velocity" % "velocity-engine-core" % "2.1")
 
-    val all = common ++ testing ++ apacheVelocity ++ scopt
+    val all = common ++ testing ++ apacheVelocity ++ scopt ++ enumeratum
   }
 }
