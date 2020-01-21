@@ -4,6 +4,8 @@ package com.jakway.sqlpp.config
  * for values not intended to be overridden
  */
 object Constants {
+  val programName: String = "sqlpp"
+  val version: String = "0.1"
 
   /**
    * this environment variable will be prepended to the arg list

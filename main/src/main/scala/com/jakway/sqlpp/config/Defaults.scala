@@ -19,6 +19,11 @@ object Defaults {
       Seq(new File(".")),
       Seq())
 
+  object VerbosityLevel {
+    import com.jakway.sqlpp.config.{VerbosityLevel => VL}
+    val default: VL = VL.Standard
+  }
+
   object DataDir {
     val dataDirVarName: String = "SQLPP_DIR"
     val xdgConfigSubdirName: String = "sqlpp"
@@ -52,5 +57,9 @@ object Defaults {
         TemplateStringInfo.default
       )
     }
+  }
+
+  object UncheckedConfig {
+    val defaultNoCreateProfileDir: Boolean = false
   }
 }
