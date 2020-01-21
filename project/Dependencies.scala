@@ -5,8 +5,9 @@ package sqlpp.project {
 
     val common = 
       Seq("org.slf4j" % "slf4j-parent" % "1.7.6",
-          "ch.qos.logback"  %  "logback-classic"    % "1.2.1",
-          "com.github.scopt" %% "scopt" % "3.7.1")
+          "ch.qos.logback"  %  "logback-classic"    % "1.2.1")
+
+    val scopt = Seq("com.github.scopt" %% "scopt" % "3.7.1")
 
     private val scalatestVersion: String = "3.2.0-M2"
 
@@ -26,6 +27,6 @@ package sqlpp.project {
     val apacheVelocity = Seq(
       "org.apache.velocity" % "velocity-engine-core" % "2.1")
 
-    val all = common ++ testing ++ apacheVelocity
+    val all = common ++ testing ++ apacheVelocity ++ scopt
   }
 }
