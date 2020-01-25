@@ -6,7 +6,8 @@ import java.nio.charset.{Charset, StandardCharsets}
 import com.jakway.sqlpp.config.checked.Config
 import com.jakway.sqlpp.config.entries.ParseOutputPattern
 import com.jakway.sqlpp.config.error.{ConfigError, InvalidLoaderTypesError, NoSourcePassedError}
-import com.jakway.sqlpp.config.unchecked.ValidateUncheckedConfig.Errors.{BadSourceError, OpenSourceError, UnknownCharsetError}
+import com.jakway.sqlpp.config.output.OutputPattern
+import com.jakway.sqlpp.config.unchecked.ValidateUncheckedConfig.Errors.{BadSourceError, NoTargetBackendsError, OpenSourceError, OutputPatternError, UnknownCharsetError}
 import com.jakway.sqlpp.error.{CheckFile, CheckString, SqlppError}
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.util.TryToEither
@@ -30,6 +31,16 @@ object ValidateUncheckedConfig {
       extends ValidateUncheckedConfigError(
         s"Did not recognize charset $encodingName;" +
           "caused error: " + SqlppError.formatThrowable(throwable))
+
+    class TargetBackendsError(override val msg: String)
+      extends ValidateUncheckedConfigError(msg)
+
+    object NoTargetBackendsError
+      extends TargetBackendsError(
+        "Must have at least 1 target backend")
+
+    class OutputPatternError(override val msg: String)
+      extends ValidateUncheckedConfigError(msg)
 
     class SourceError(override val msg: String)
       extends ValidateUncheckedConfigError(msg)
@@ -109,6 +120,33 @@ object ValidateUncheckedConfig {
     def apply(uncheckedConfig: UncheckedConfig): Either[SqlppError, Config] = {
       //TODO
       ???
+    }
+
+    /**
+     * We require a format symbol if the number of target backends
+     * is > 1 because without it the format string will not
+     * resolve to enough unique locations
+     * @param encoding
+     * @param numTargetBackends
+     * @return
+     */
+    private def parseOutputPattern(encoding: String,
+                                   numTargetBackends: Int,
+                                   pattern: String):
+      Either[SqlppError, OutputPattern] = {
+
+      if(numTargetBackends <= 0) {
+        Left(NoTargetBackendsError)
+      } else {
+        parseOutputPattern(encoding, numTargetBackends > 1, pattern)
+      }
+    }
+
+    private def parseOutputPattern(encoding: String,
+                                   requireFormatSymbol: Boolean,
+                                   pattern: String):
+      Either[SqlppError, OutputPattern] = {
+      new ParseOutputPattern(encoding)(pattern, requireFormatSymbol)
     }
 
     private def checkEncoding(encodingName: String): Either[SqlppError, String] = {
