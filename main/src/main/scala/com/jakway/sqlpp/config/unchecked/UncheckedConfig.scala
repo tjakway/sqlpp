@@ -7,7 +7,7 @@ import com.jakway.sqlpp.config.{Constants, Defaults, VerbosityLevel}
 
 case class UncheckedConfig(verbosityLevel: VerbosityLevel =
                              Defaults.VerbosityLevel.default,
-                           source: Option[File] = None,
+                           source: Option[String] = None,
                            outputTemplate: Option[String] = None,
                            inputEncoding: Option[String] = None,
                            targetBackends: Seq[String] = Seq(),
@@ -16,7 +16,9 @@ case class UncheckedConfig(verbosityLevel: VerbosityLevel =
                            noCreateProfileDir: Boolean =
                              UncheckedConfigDefaults.defaultNoCreateProfileDir,
                            createProfileDir: Option[String],
-                           allowOverwrite: Boolean = Defaults.allowOverwrite)
+                             allowOverwrite: Boolean = Defaults.allowOverwrite,
+                           noSourceImpliesStdin: Boolean =
+                             Defaults.noSourceImpliesStdin)
 
 object UncheckedConfig {
 
@@ -29,9 +31,8 @@ object UncheckedConfig {
       programName(Constants.programName),
       head(Constants.programName, Constants.version),
 
-      opt[File]('s', "source")
-        .required()
-        .action((x, c) => c.copy(source = Some(x))),
+      opt[Option[String]]('s', "source")
+        .action((x, c) => c.copy(source = x)),
 
       opt[String]('t', "output-template")
         .required()

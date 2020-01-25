@@ -19,6 +19,8 @@ object Defaults {
       Seq(new File(".")),
       Seq())
 
+  val noSourceImpliesStdin: Boolean = true
+
   object VerbosityLevel {
     import com.jakway.sqlpp.config.{VerbosityLevel => VL}
     val default: VL = VL.Standard
