@@ -1,5 +1,6 @@
 package com.jakway.sqlpp.config.entries
 
+import com.jakway.sqlpp.config.entries.ParseOutputPattern.{EmptyFormatStringError, NoFormatSymbolError}
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.config.output.{OutputPattern, StdoutOutputPattern}
 import com.jakway.sqlpp.error.{CheckString, SqlppError}
@@ -8,18 +9,6 @@ import com.jakway.sqlpp.util.RegexUtil
 import scala.util.matching.Regex
 
 class ParseOutputPattern(val encoding: String) {
-  class ParseOutputPatternError(override val msg: String)
-    extends ConfigError(msg)
-
-  class BadFormatStringError(override val msg: String)
-    extends ParseOutputPatternError(msg)
-
-  object EmptyFormatStringError
-    extends BadFormatStringError("Passed format string was empty")
-
-  class NoFormatSymbolError(override val msg: String)
-    extends BadFormatStringError(msg)
-
   private def regexMatches(r: Regex, s: String): Boolean = {
     r.findFirstIn(s).isDefined
   }
@@ -58,6 +47,18 @@ class ParseOutputPattern(val encoding: String) {
 }
 
 object ParseOutputPattern {
+  class ParseOutputPatternError(override val msg: String)
+    extends ConfigError(msg)
+
+  class BadFormatStringError(override val msg: String)
+    extends ParseOutputPatternError(msg)
+
+  object EmptyFormatStringError
+    extends BadFormatStringError("Passed format string was empty")
+
+  class NoFormatSymbolError(override val msg: String)
+    extends BadFormatStringError(msg)
+
   lazy val outputStringRegex: Regex = {
     val unescapedPercentSRegex: String = RegexUtil.unescaped + "%s"
     val matchAnything: String = ".*"
