@@ -4,6 +4,7 @@ import java.io.File
 import java.util.Formatter
 
 import com.jakway.sqlpp.config.error.ConfigError
+import com.jakway.sqlpp.config.unchecked.CreateProfileDirOption.Errors.CreateProfileDirOptionError
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -65,15 +66,15 @@ object CreateProfileDirOption {
 
 
   object Print {
-    private def newFmt(): Formatter = {
+    def newFmt(): Formatter = {
       val sb = new StringBuffer()
       new Formatter(sb)
     }
 
     private val defaultPrintChoicesSeparator: String = ":"
-    private def printChoices(
-                              choices: Seq[(String, Option[Set[String]])] = allChoices,
-                              separator: String = defaultPrintChoicesSeparator): String = {
+    def printChoices(
+      choices: Seq[(String, Option[Set[String]])] = allChoices,
+      separator: String = defaultPrintChoicesSeparator): String = {
       def printChoice(x: Option[Set[String]]): String = x match {
         case Some(xs) => {
           val closingBracket =
@@ -135,8 +136,18 @@ object CreateProfileDirOption {
     }
   }
 
+  private def reformatErrorMessage(underlyingError: SqlppError,
+                                   optionName: String): SqlppError = {
+    val fmt = Print.newFmt()
+    fmt.format(s"Error handling %s caused by %s\n",
+      optionName, underlyingError.print)
+    fmt.format("%s arguments:\n", optionName)
+    fmt.format("%s", Print.printChoices())
 
-  def parse(str: String): Either[SqlppError, CreateProfileDirOption] = {
+    new CreateProfileDirOptionError(fmt.toString)
+  }
+
+  def parse(str: String, optionName: String): Either[SqlppError, CreateProfileDirOption] = {
     def matches(choices: Option[Set[String]]): Boolean = {
       choices match {
         case Some(xs) => {
@@ -154,7 +165,12 @@ object CreateProfileDirOption {
         Right(CreateDefaultProfileDir)
 
       case _ => {
-        CreateUserPassedProfileDir(new File(str))
+        CreateUserPassedProfileDir(new File(str)) match {
+          case Right(x) => Right(x)
+          case Left(e) =>
+            //wrap and return error
+            Left(reformatErrorMessage(e, optionName))
+        }
       }
     }
   }
