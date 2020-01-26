@@ -2,7 +2,7 @@ package com.jakway.sqlpp.error
 
 import java.io.{File, Writer}
 
-import com.jakway.sqlpp.error.CheckFile.FileError.{CannotExecuteError, CannotReadError, CannotWriteError, ExceptionThrownDuringOperationError, FileDoesNotExistError, MkdirError, NotDirectoryError, NotFileError}
+import com.jakway.sqlpp.error.CheckFile.FileError.{CannotExecuteError, CannotReadError, CannotWriteError, ExceptionThrownDuringOperationError, FileDoesNotExistError, FileExistsError, MkdirError, NotDirectoryError, NotFileError}
 
 import scala.util.{Failure, Success, Try}
 
@@ -14,8 +14,14 @@ object CheckFile {
     extends SqlppError(SqlppError.formatErrors(errors))
 
   object FileError {
-    class FileDoesNotExistError(val f: File)
-      extends FileError(s"$f does not exist")
+    class FileExistenceError(val f: File, val errorReason: String)
+      extends FileError(s"$f $errorReason")
+
+    class FileDoesNotExistError(override val f: File)
+      extends FileExistenceError(f, "does not exist")
+
+    class FileExistsError(override val f: File)
+      extends FileExistenceError(f, "should not exist")
 
     class OperationError(val f: File,
                          override val msg: String)
@@ -104,6 +110,7 @@ object CheckFile {
   }
 
   def checkExists: FileCheckF = mkCheck(_.exists)(new FileDoesNotExistError(_))
+  def checkDoesNotExist: FileCheckF = mkCheck(!_.exists)(new FileExistsError(_))
   def checkReadable: FileCheckF = mkCheck(_.canRead)(new CannotReadError(_))
   def checkWritable: FileCheckF = mkCheck(_.canWrite)(new CannotWriteError(_))
   def checkExecutable: FileCheckF = mkCheck(_.canExecute)(new CannotExecuteError(_))
