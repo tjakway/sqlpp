@@ -3,7 +3,6 @@ package com.jakway.sqlpp.config.unchecked
 import java.io.File
 
 import com.jakway.sqlpp.config.Defaults.{UncheckedConfig => UncheckedConfigDefaults}
-import com.jakway.sqlpp.config.unchecked.UncheckedConfig.CreateProfileDirOption
 import com.jakway.sqlpp.config.{Constants, Defaults, VerbosityLevel}
 
 case class UncheckedConfig(verbosityLevel: VerbosityLevel =
