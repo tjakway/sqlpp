@@ -147,7 +147,9 @@ object CreateProfileDirOption {
     new CreateProfileDirOptionError(fmt.toString)
   }
 
-  def parse(str: String, optionName: String): Either[SqlppError, CreateProfileDirOption] = {
+  def parse(str: String, optionName: String):
+    Either[SqlppError, CreateProfileDirOption] = {
+
     def matches(choices: Option[Set[String]]): Boolean = {
       choices match {
         case Some(xs) => {

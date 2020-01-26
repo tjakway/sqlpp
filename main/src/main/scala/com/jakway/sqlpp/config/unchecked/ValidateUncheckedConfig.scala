@@ -127,12 +127,15 @@ object ValidateUncheckedConfig {
 
     private def checkCreateProfileDir(noCreateProfileDir: Boolean,
                                       createProfileDir: Option[String]):
-      Either[SqlppError, DataDir.CreateDirF] = {
+      Either[SqlppError, CreateProfileDirOption] = {
       if(noCreateProfileDir && createProfileDir.isDefined) {
         Left(new ProfileDirError(
           UncheckedConfig.OptionNames.noCreateProfileDir +
             " is incompatible with " +
             UncheckedConfig.OptionNames.createProfileDir))
+      } else {
+
+        CreateProfileDirOption.parse()
       }
     }
 
