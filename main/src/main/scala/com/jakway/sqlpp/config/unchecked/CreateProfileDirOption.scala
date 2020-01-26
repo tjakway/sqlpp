@@ -176,4 +176,15 @@ object CreateProfileDirOption {
       }
     }
   }
+
+  def parse(str: Option[String], optionName: String):
+    Either[SqlppError, CreateProfileDirOption] = {
+    str match {
+      case None => {
+        logger.debug(s"No argument to $optionName, using CreateDefaultProfileDir")
+        Right(CreateDefaultProfileDir)
+      }
+      case Some(x) => parse(x, optionName)
+    }
+  }
 }

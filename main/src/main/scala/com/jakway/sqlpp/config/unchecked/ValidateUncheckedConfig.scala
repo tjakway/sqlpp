@@ -135,7 +135,9 @@ object ValidateUncheckedConfig {
             UncheckedConfig.OptionNames.createProfileDir))
       } else {
 
-        CreateProfileDirOption.parse()
+        CreateProfileDirOption.parse(
+          createProfileDir,
+          UncheckedConfig.OptionNames.createProfileDir)
       }
     }
 
