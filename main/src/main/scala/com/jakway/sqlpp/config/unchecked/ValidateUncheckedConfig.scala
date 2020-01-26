@@ -4,10 +4,10 @@ import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.charset.{Charset, StandardCharsets}
 
 import com.jakway.sqlpp.config.checked.Config
-import com.jakway.sqlpp.config.entries.ParseOutputPattern
+import com.jakway.sqlpp.config.entries.{DataDir, ParseOutputPattern}
 import com.jakway.sqlpp.config.error.{ConfigError, InvalidLoaderTypesError, NoSourcePassedError}
 import com.jakway.sqlpp.config.output.OutputPattern
-import com.jakway.sqlpp.config.unchecked.ValidateUncheckedConfig.Errors.{BadSourceError, NoTargetBackendsError, OpenSourceError, OutputPatternError, UnknownCharsetError}
+import com.jakway.sqlpp.config.unchecked.ValidateUncheckedConfig.Errors.{BadSourceError, NoTargetBackendsError, OpenSourceError, OutputPatternError, ProfileDirError, UnknownCharsetError}
 import com.jakway.sqlpp.error.{CheckFile, CheckString, SqlppError}
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.util.TryToEither
@@ -25,6 +25,9 @@ object ValidateUncheckedConfig {
   object Errors {
     class ValidateUncheckedConfigError(override val msg: String)
       extends ConfigError(msg)
+
+    class ProfileDirError(override val msg: String)
+      extends ValidateUncheckedConfigError(msg)
 
     class UnknownCharsetError(val encodingName: String,
                               val throwable: Throwable)
@@ -120,6 +123,17 @@ object ValidateUncheckedConfig {
     def apply(uncheckedConfig: UncheckedConfig): Either[SqlppError, Config] = {
       //TODO
       ???
+    }
+
+    private def checkCreateProfileDir(noCreateProfileDir: Boolean,
+                                      ):
+      Either[SqlppError, DataDir.CreateDirF] = {
+      if(noCreateProfileDir && createProfileDir.isDefined) {
+        Left(new ProfileDirError(
+          UncheckedConfig.OptionNames.noCreateProfileDir +
+            " is incompatible with " +
+            UncheckedConfig.OptionNames.createProfileDir))
+      }
     }
 
     /**

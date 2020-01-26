@@ -10,6 +10,7 @@ import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import org.slf4j.{Logger, LoggerFactory}
 
 object DataDir {
+  type CreateDirF = File => Either[SqlppError, Unit]
   import com.jakway.sqlpp.config.Defaults.DataDir._
 
   class DataDirError(override val msg: String)

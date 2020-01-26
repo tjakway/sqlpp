@@ -5,6 +5,7 @@ import java.nio.charset.{Charset, StandardCharsets}
 
 import com.jakway.sqlpp.config.checked.{Config, TemplateStringInfo}
 import com.jakway.sqlpp.config.output.OutputTarget
+import com.jakway.sqlpp.config.unchecked.UncheckedConfig.CreateProfileDirOption
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.ExtraTemplateOptions
@@ -27,6 +28,8 @@ object Defaults {
   }
 
   object DataDir {
+    val createProfileDirOption: CreateProfileDirOption =
+      CreateProfileDirOption.CreateDefaultProfileDir
     val dataDirVarName: String = "SQLPP_DIR"
     val xdgConfigSubdirName: String = "sqlpp"
     val homeSubdirName: String = ".sqlpp"

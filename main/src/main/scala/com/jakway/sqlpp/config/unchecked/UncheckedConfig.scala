@@ -3,6 +3,7 @@ package com.jakway.sqlpp.config.unchecked
 import java.io.File
 
 import com.jakway.sqlpp.config.Defaults.{UncheckedConfig => UncheckedConfigDefaults}
+import com.jakway.sqlpp.config.unchecked.UncheckedConfig.CreateProfileDirOption
 import com.jakway.sqlpp.config.{Constants, Defaults, VerbosityLevel}
 
 case class UncheckedConfig(verbosityLevel: VerbosityLevel =
@@ -15,12 +16,30 @@ case class UncheckedConfig(verbosityLevel: VerbosityLevel =
                            resourceLoaderTypes: Set[String] = Set(),
                            noCreateProfileDir: Boolean =
                              UncheckedConfigDefaults.defaultNoCreateProfileDir,
-                           createProfileDir: Option[String],
-                             allowOverwrite: Boolean = Defaults.allowOverwrite,
+                           createProfileDir: Option[String] = None,
+                           allowOverwrite: Boolean = Defaults.allowOverwrite,
                            noSourceImpliesStdin: Boolean =
                              Defaults.noSourceImpliesStdin)
 
 object UncheckedConfig {
+  sealed abstract class CreateProfileDirOption
+
+  object CreateProfileDirOption {
+    case object NoCreateProfileDir extends CreateProfileDirOption
+    class CreateProfileDir extends CreateProfileDirOption
+    case object CreateDefaultProfileDir extends CreateProfileDirOption
+    case class CreateUserPassedProfileDir(toCreate: File)
+      extends CreateProfileDirOption
+  }
+
+  object OptionNames {
+    private def optionPrefix: String = "--"
+    private def prefix(name: String): String =
+      optionPrefix + name
+
+    val noCreateProfileDir: String = prefix("no-create-profile-dir")
+    val createProfileDir: String = prefix("create-profile-dir")
+  }
 
   private def parser(defaultConfigDir: String) = {
     import scopt.OParser
