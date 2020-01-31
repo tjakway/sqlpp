@@ -163,6 +163,41 @@ object ResourceLoaderConfig {
 
     object LoaderType {
       val all: Set[LoaderType] = Set(FileLoader, ClassLoader, JarLoader)
+
+      class LoaderTypeReadError(override val msg: String)
+        extends StandardResourceLoaderError(msg)
+
+      private def printLoaderNames: String = {
+        val closingBrace: String = {
+          //prevent double spaces for the empty set
+          val prefix = if(all.size > 1) {
+            " "
+          } else {
+            ""
+          }
+          prefix + "}"
+        }
+
+        "{ " + all.map(_.loaderName).reduce(_ + ", " + _) + closingBrace
+      }
+
+      private def cmpTrimmedStrings: (String, String) => Boolean = {
+        case (left, right) => {
+          left.trim == right.trim
+        }
+      }
+
+      def read(loaderTypeName: String,
+               cmp: (String, String) => Boolean = cmpTrimmedStrings): Either[SqlppError, LoaderType] = {
+        all.find(x => cmp(x.loaderName, loaderTypeName)) match {
+          case Some(x) => Right(x)
+          case None =>
+            Left(new LoaderTypeReadError(
+              s"Could not find a resource loader matching" +
+                s" passed name \"$loaderTypeName\"" +
+                " in " + printLoaderNames))
+        }
+      }
     }
 
     case object FileLoader extends LoaderType {
