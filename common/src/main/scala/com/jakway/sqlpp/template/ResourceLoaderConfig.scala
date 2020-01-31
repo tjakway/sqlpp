@@ -194,7 +194,7 @@ object ResourceLoaderConfig {
           case None =>
             Left(new LoaderTypeReadError(
               s"Could not find a resource loader matching" +
-                s" passed name \"$loaderTypeName\"" +
+                s" passed name < " + loaderTypeName + " >" +
                 " in " + printLoaderNames))
         }
       }
