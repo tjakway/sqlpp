@@ -14,6 +14,10 @@ object Constants {
    */
   val additionalArgsEnvVarName: String = "SQLPP_ARGS"
 
+  object Profile {
+    val backendsDirName: String = "backends"
+  }
+
   val templatesDirName: String = "templates"
 
   object StandardBackendResources {

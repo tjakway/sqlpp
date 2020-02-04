@@ -1,13 +1,14 @@
 package com.jakway.sqlpp.config.unchecked
 
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
-import java.nio.charset.{Charset, StandardCharsets}
+import java.nio.charset.Charset
 
+import com.jakway.sqlpp.config.Defaults
 import com.jakway.sqlpp.config.checked.Config
-import com.jakway.sqlpp.config.entries.{DataDir, ParseOutputPattern}
+import com.jakway.sqlpp.config.entries.ParseOutputPattern
 import com.jakway.sqlpp.config.error.{ConfigError, InvalidLoaderTypesError, NoSourcePassedError}
 import com.jakway.sqlpp.config.output.OutputPattern
-import com.jakway.sqlpp.config.unchecked.ValidateUncheckedConfig.Errors.{BadSourceError, NoTargetBackendsError, OpenSourceError, OutputPatternError, ProfileDirError, UnknownCharsetError}
+import com.jakway.sqlpp.config.unchecked.ValidateUncheckedConfig.Errors._
 import com.jakway.sqlpp.error.{CheckFile, CheckString, SqlppError}
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.util.TryToEither
@@ -21,6 +22,8 @@ object ValidateUncheckedConfig {
   def check(uncheckedConfig: UncheckedConfig): Either[SqlppError, Config] = {
     Check(uncheckedConfig)
   }
+
+  def apply: UncheckedConfig => Either[SqlppError, Config] = check
 
   object Errors {
     class ValidateUncheckedConfigError(override val msg: String)
@@ -122,7 +125,25 @@ object ValidateUncheckedConfig {
   private object Check {
     def apply(uncheckedConfig: UncheckedConfig): Either[SqlppError, Config] = {
       //TODO
-      ???
+
+      val uncheckedEncoding = getUncheckedEncoding(uncheckedConfig)
+      for {
+        checkedEncoding <- checkEncoding(uncheckedEncoding)
+
+        createProfileDirOption <- checkCreateProfileDir(
+          uncheckedConfig.noCreateProfileDir,
+          uncheckedConfig.createProfileDir)
+
+        //outputPattern <- parseOutputPattern(checkedEncoding, uncheckedConfig.)
+      } yield {
+        ???
+      }
+    }
+
+    private def getUncheckedEncoding(uncheckedConfig: UncheckedConfig): String = {
+      uncheckedConfig
+        .inputEncoding
+        .getOrElse(Defaults.defaultEncoding.displayName())
     }
 
     private def checkCreateProfileDir(noCreateProfileDir: Boolean,
@@ -139,6 +160,12 @@ object ValidateUncheckedConfig {
           createProfileDir,
           UncheckedConfig.OptionNames.createProfileDir)
       }
+    }
+
+    def checkBackends(backendNames: Set[String],
+                      additionalBackendLocations: Set[String],
+                      profileLocation: File) = {
+
     }
 
     /**

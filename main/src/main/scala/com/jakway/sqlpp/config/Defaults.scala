@@ -33,6 +33,10 @@ object Defaults {
     val dataDirVarName: String = "SQLPP_DIR"
     val xdgConfigSubdirName: String = "sqlpp"
     val homeSubdirName: String = ".sqlpp"
+
+    object Options {
+      val defaultRejectNonXmlFiles: Boolean = true
+    }
   }
 
   object TemplateStringInfo {

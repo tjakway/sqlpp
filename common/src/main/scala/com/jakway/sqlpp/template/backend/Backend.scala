@@ -1,11 +1,15 @@
 package com.jakway.sqlpp.template.backend
 
+import java.io.File
 import java.util.Properties
 
+import com.jakway.sqlpp.config.Constants
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.DelegatingValueSource
 import com.jakway.sqlpp.template.backend.Backend.Lookup.Error.WrongNumberOfMatches
 import com.jakway.sqlpp.template.backend.Backend.NamelessBackendError
+
+import scala.util.Try
 
 /**
  * @param names
