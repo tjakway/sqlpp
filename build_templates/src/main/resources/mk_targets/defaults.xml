@@ -3,6 +3,8 @@
 <properties>
     <!-- Default values will be overridden by target-specific files -->
 
+    <entry key="in_target_name">SQLPP_DEFAULTS_TARGET</entry>
+
     <!-- AKA 2^16 -->
     <entry key="in_text_type">VARCHAR(65535)</entry>
     <entry key="in_index_type">INTEGER</entry>
