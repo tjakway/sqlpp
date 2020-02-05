@@ -137,7 +137,7 @@ object ValidateUncheckedConfig {
           uncheckedConfig.noCreateProfileDir,
           uncheckedConfig.createProfileDir)
 
-        outputPattern <- parseOutputPattern(
+        outputPattern <- ParseOutputPattern(
           checkedEncoding,
           requireFormatSymbol,
           uncheckedConfig.outputTemplate)
