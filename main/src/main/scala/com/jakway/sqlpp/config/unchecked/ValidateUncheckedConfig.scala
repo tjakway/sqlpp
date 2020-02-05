@@ -141,6 +141,8 @@ object ValidateUncheckedConfig {
           checkedEncoding,
           requireFormatSymbol,
           uncheckedConfig.outputTemplate)
+
+        loaderTypes <- CheckLoaderTypes(uncheckedConfig.resourceLoaderTypes)
       } yield {
         ???
       }
@@ -226,12 +228,29 @@ object ValidateUncheckedConfig {
       }
     }
 
-    private def checkLoaderTypes(loaderTypes: Set[LoaderType]): Either[SqlppError, Set[LoaderType]] = {
-      if(loaderTypes.isEmpty) {
-        Left(new InvalidLoaderTypesError("Need at least 1 resource loader type"))
-      } else {
-        Right(loaderTypes)
+    private object CheckLoaderTypes {
+      private def checkLoaderTypes(loaderTypes: Set[LoaderType]): Either[SqlppError, Set[LoaderType]] = {
+        if(loaderTypes.isEmpty) {
+          Left(new InvalidLoaderTypesError("Need at least 1 resource loader type"))
+        } else {
+          Right(loaderTypes)
+        }
+      }
+
+      def apply(loaderTypeNames: Set[String]):
+        Either[SqlppError, Set[LoaderType]] = {
+
+        val empty: Either[SqlppError, Set[LoaderType]] = Right(Set.empty)
+        loaderTypeNames.foldLeft(empty) {
+          case (eAcc, thisLoaderTypeName) => eAcc.flatMap { acc =>
+            LoaderType
+              .read(thisLoaderTypeName)
+              .map(res => acc + res)
+          }
+        }
+        .flatMap(checkLoaderTypes)
       }
     }
+
   }
 }
