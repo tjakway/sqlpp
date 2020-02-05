@@ -4,7 +4,7 @@ import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.charset.Charset
 
 import com.jakway.sqlpp.config.Defaults
-import com.jakway.sqlpp.config.checked.Config
+import com.jakway.sqlpp.config.checked
 import com.jakway.sqlpp.config.entries.ParseOutputPattern
 import com.jakway.sqlpp.config.error.{ConfigError, InvalidLoaderTypesError, NoSourcePassedError}
 import com.jakway.sqlpp.config.output.OutputPattern
@@ -19,11 +19,11 @@ import scala.util.Try
 object ValidateUncheckedConfig {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def check(uncheckedConfig: UncheckedConfig): Either[SqlppError, Config] = {
+  def check(uncheckedConfig: UncheckedConfig): Either[SqlppError, checked.Config] = {
     Check(uncheckedConfig)
   }
 
-  def apply: UncheckedConfig => Either[SqlppError, Config] = check
+  def apply: UncheckedConfig => Either[SqlppError, checked.Config] = check
 
   object Errors {
     class ValidateUncheckedConfigError(override val msg: String)
@@ -123,7 +123,7 @@ object ValidateUncheckedConfig {
   }
 
   private object Check {
-    def apply(uncheckedConfig: UncheckedConfig): Either[SqlppError, Config] = {
+    def apply(uncheckedConfig: UncheckedConfig): Either[SqlppError, checked.Config] = {
       //TODO
 
       val requireFormatSymbol: Boolean =
@@ -143,7 +143,19 @@ object ValidateUncheckedConfig {
           uncheckedConfig.outputTemplate)
 
         loaderTypes <- CheckLoaderTypes(uncheckedConfig.resourceLoaderTypes)
+
+        source <- ParseSource.parseSource(
+          uncheckedConfig.source,
+          uncheckedConfig.noSourceImpliesStdin)
       } yield {
+        checked.Config(
+          source,
+          null, //TODO
+          checkedEncoding,
+          checkedEncoding,
+          loaderTypes,
+
+          )
         ???
       }
     }
