@@ -126,7 +126,10 @@ object ValidateUncheckedConfig {
     def apply(uncheckedConfig: UncheckedConfig): Either[SqlppError, Config] = {
       //TODO
 
+      val requireFormatSymbol: Boolean =
+        uncheckedConfig.targetBackends.size > 1
       val uncheckedEncoding = getUncheckedEncoding(uncheckedConfig)
+
       for {
         checkedEncoding <- checkEncoding(uncheckedEncoding)
 
@@ -134,7 +137,10 @@ object ValidateUncheckedConfig {
           uncheckedConfig.noCreateProfileDir,
           uncheckedConfig.createProfileDir)
 
-        //outputPattern <- parseOutputPattern(checkedEncoding, uncheckedConfig.)
+        outputPattern <- parseOutputPattern(
+          checkedEncoding,
+          requireFormatSymbol,
+          uncheckedConfig.outputTemplate)
       } yield {
         ???
       }
@@ -162,42 +168,62 @@ object ValidateUncheckedConfig {
       }
     }
 
-    def checkBackends(backendNames: Set[String],
-                      additionalBackendLocations: Set[String],
-                      profileLocation: File) = {
-
-    }
-
-    /**
-     * We require a format symbol if the number of target backends
-     * is > 1 because without it the format string will not
-     * resolve to enough unique locations
-     * @param encoding
-     * @param numTargetBackends
-     * @return
-     */
-    private def parseOutputPattern(encoding: String,
-                                   numTargetBackends: Int,
-                                   pattern: String):
-      Either[SqlppError, OutputPattern] = {
-
-      if(numTargetBackends <= 0) {
-        Left(NoTargetBackendsError)
-      } else {
-        parseOutputPattern(encoding, numTargetBackends > 1, pattern)
-      }
-    }
-
-    private def parseOutputPattern(encoding: String,
-                                   requireFormatSymbol: Boolean,
-                                   pattern: String):
-      Either[SqlppError, OutputPattern] = {
-      new ParseOutputPattern(encoding)(pattern, requireFormatSymbol)
-    }
 
     private def checkEncoding(encodingName: String): Either[SqlppError, String] = {
       TryToEither(new UnknownCharsetError(encodingName, _))(
         Try(Charset.forName(encodingName).displayName()))
+    }
+
+    private object ParseOutputPattern {
+      //re-importing to refer to the other object as
+      //entries.ParseOutputPattern to avoid confusion
+      import com.jakway.sqlpp.config.entries
+
+      private val logger: Logger = LoggerFactory.getLogger(getClass)
+      /**
+       * We require a format symbol if the number of target backends
+       * is > 1 because without it the format string will not
+       * resolve to enough unique locations
+       * @param encoding
+       * @param numTargetBackends
+       * @return
+       */
+      def apply(encoding: String,
+                numTargetBackends: Int,
+                pattern: String):
+        Either[SqlppError, OutputPattern] = {
+
+        if(numTargetBackends <= 0) {
+          Left(NoTargetBackendsError)
+        } else {
+          apply(encoding, numTargetBackends > 1, pattern)
+        }
+      }
+
+      def apply(encoding: String,
+                requireFormatSymbol: Boolean,
+                pattern: String):
+        Either[SqlppError, OutputPattern] = {
+        new entries.ParseOutputPattern(encoding)(pattern, requireFormatSymbol)
+      }
+
+      def apply(encoding: String,
+                requireFormatSymbol: Boolean,
+                pattern: Option[String]):
+        Either[SqlppError, OutputPattern] = {
+
+        pattern match {
+          case Some(x) => {
+            logger.debug("Parsing output pattern %s", x)
+            apply(encoding, requireFormatSymbol, x)
+          }
+          case None => {
+            logger.debug("Empty output pattern, assuming stdout")
+            apply(encoding, requireFormatSymbol,
+              entries.ParseOutputPattern.stdoutSpecialChar.toString)
+          }
+        }
+      }
     }
 
     private def checkLoaderTypes(loaderTypes: Set[LoaderType]): Either[SqlppError, Set[LoaderType]] = {
