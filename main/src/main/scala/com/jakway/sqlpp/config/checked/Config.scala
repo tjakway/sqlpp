@@ -9,6 +9,11 @@ import com.jakway.sqlpp.template.{GeneralVelocityOptions, TemplateEngine}
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.{ExtraTemplateOptions, PropertyMap}
 
+/**
+ * TODO: consolidate stringResourceRepositoryName with ExtraTemplateOptions
+ * @param templateSourceKey
+ * @param stringResourceRepositoryName
+ */
 case class TemplateStringInfo(templateSourceKey: String =
                                 Defaults.TemplateStringInfo
                                   .defaultTemplateSourceKey,

@@ -11,11 +11,14 @@ import com.jakway.sqlpp.config.output.OutputPattern
 import com.jakway.sqlpp.config.unchecked.ValidateUncheckedConfig.Errors._
 import com.jakway.sqlpp.error.{CheckFile, CheckString, SqlppError}
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
+import com.jakway.sqlpp.template.TemplateEngine.ExtraTemplateOptions
 import com.jakway.sqlpp.util.TryToEither
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.Try
 
+//TODO: warn if extraJars is nonempty but the list
+// of loader types doesn't contain JarLoader
 object ValidateUncheckedConfig {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -67,6 +70,9 @@ object ValidateUncheckedConfig {
 
     object NoSourcePassedError
       extends SourceError("Need input source.")
+
+    class ExtraTemplateOptionsError(override val msg: String)
+      extends ValidateUncheckedConfigError(msg)
   }
 
   private object ParseSource {
@@ -147,6 +153,8 @@ object ValidateUncheckedConfig {
         source <- ParseSource.parseSource(
           uncheckedConfig.source,
           uncheckedConfig.noSourceImpliesStdin)
+
+        extraTemplateOptions <- CheckExtraTemplateOptions.apply(uncheckedConfig)
       } yield {
         checked.Config(
           source,
@@ -154,9 +162,8 @@ object ValidateUncheckedConfig {
           checkedEncoding,
           checkedEncoding,
           loaderTypes,
-
-          )
-        ???
+          extraTemplateOptions,
+          Defaults.TemplateStringInfo.default)
       }
     }
 
@@ -264,5 +271,97 @@ object ValidateUncheckedConfig {
       }
     }
 
+    private object CheckExtraTemplateOptions {
+      def apply: UncheckedConfig => Either[SqlppError, ExtraTemplateOptions] =
+        checkExtraTemplateOptions
+
+      private def err(throwable: Throwable): SqlppError =
+        new ExtraTemplateOptionsError(
+          "Error in additional template options: " +
+        SqlppError.formatThrowableCause(throwable))
+
+      private def getCurrentWorkingDirectory: Either[SqlppError, File] = {
+        TryToEither(err)(Try(new File(".")))
+      }
+
+      private def checkExtraTemplateOptions(
+        uncheckedConfig: UncheckedConfig):
+        Either[SqlppError, ExtraTemplateOptions] = {
+
+        for {
+          extraDirs <- checkExtraDirs(uncheckedConfig.extraDirs)
+          extraJars <- checkExtraJars(uncheckedConfig.extraJars)
+          cwd <- getCurrentWorkingDirectory
+        } yield {
+          //add the current working directory to the list if it doesn't contain it already
+          //TODO: add a config option to disable this behavior
+          val finalDirs =
+            if(extraDirs.contains(cwd)) {
+              extraDirs
+            } else {
+              extraDirs :+ cwd
+            }
+
+          ExtraTemplateOptions(
+            //TODO: make this a config option
+            Defaults.extraTemplateOptions.stringRepositoryName,
+            finalDirs,
+            extraJars
+          )
+        }
+      }
+
+      private def checkExtraDirs(dirs: Seq[String]):
+        Either[SqlppError, Seq[File]] = {
+
+        val zero: Either[SqlppError, Seq[File]] = Right(Seq.empty)
+        dirs.foldLeft(zero) {
+          case (eAcc, thisDir) => eAcc.flatMap { acc =>
+            checkDir(thisDir).map(res => acc :+ res)
+          }
+        }
+      }
+
+      //TODO: consolidate with checkExtraDirs to eliminate redundancy
+      private def checkExtraJars(jars: Seq[String]):
+        Either[SqlppError, Seq[String]] = {
+
+        val zero: Either[SqlppError, Seq[String]] = Right(Seq.empty)
+        jars.foldLeft(zero) {
+          case (eAcc, thisJar) => eAcc.flatMap { acc =>
+            checkJar(thisJar).map(res => acc :+ res)
+          }
+        }
+      }
+
+      private def checkDir(d: String): Either[SqlppError, File] = {
+        val checks = Seq(
+          CheckFile.checkExists,
+          CheckFile.checkIsDirectory,
+          CheckFile.checkReadable,
+          CheckFile.checkExecutable)
+
+        runChecks(checks, d)
+      }
+
+      private def runChecks(checks: Seq[CheckFile.FileCheckF],
+                            name: String): Either[SqlppError, File] = {
+
+        TryToEither(err)(Try(new File(name)))
+          .flatMap { dir =>
+            CheckFile.composeAll(checks)(dir)
+              .map(_ => dir)
+          }
+      }
+
+      private def checkJar(j: String): Either[SqlppError, String] = {
+        val checks = Seq(
+          CheckFile.checkExists,
+          CheckFile.checkIsFile,
+          CheckFile.checkReadable)
+
+        runChecks(checks, j).map(f => f.getAbsolutePath)
+      }
+    }
   }
 }

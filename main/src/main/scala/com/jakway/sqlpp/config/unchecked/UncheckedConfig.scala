@@ -5,6 +5,8 @@ import java.io.File
 import com.jakway.sqlpp.config.Defaults.{UncheckedConfig => UncheckedConfigDefaults}
 import com.jakway.sqlpp.config.{Constants, Defaults, VerbosityLevel}
 
+//TODO: add StringRepositoryName parameter (probably
+// will only be used for debugging purposes)
 case class UncheckedConfig(verbosityLevel: VerbosityLevel =
                              Defaults.VerbosityLevel.default,
                            source: Option[String] = None,
@@ -13,12 +15,23 @@ case class UncheckedConfig(verbosityLevel: VerbosityLevel =
                            targetBackends: Seq[String] = Seq(),
                            addBackendLocations: Set[String] = Set(),
                            resourceLoaderTypes: Set[String] = Set(),
+                           extraDirs: Seq[String],
+                           extraJars: Seq[String],
                            noCreateProfileDir: Boolean =
                              UncheckedConfigDefaults.defaultNoCreateProfileDir,
                            createProfileDir: Option[String] = None,
                            allowOverwrite: Boolean = Defaults.allowOverwrite,
                            noSourceImpliesStdin: Boolean =
-                             Defaults.noSourceImpliesStdin)
+                             Defaults.noSourceImpliesStdin) {
+
+  protected def addDir(d: String): UncheckedConfig = {
+    copy(extraDirs = this.extraDirs :+ d)
+  }
+
+  protected def addJar(j: String): UncheckedConfig = {
+    copy(extraJars = this.extraJars :+ j)
+  }
+}
 
 object UncheckedConfig {
   sealed abstract class CreateProfileDirOption
@@ -38,6 +51,9 @@ object UncheckedConfig {
 
     val noCreateProfileDir: String = prefix("no-create-profile-dir")
     val createProfileDir: String = prefix("create-profile-dir")
+
+    val addDir: String = prefix("add-dir")
+    val addJar: String = prefix("add-jar")
   }
 
   private def parser(defaultConfigDir: String) = {
@@ -98,7 +114,31 @@ object UncheckedConfig {
         .action((x, c) => c.copy(createProfileDir = Some(x)))
         .text(s"default location: $defaultConfigDir"),
 
-      opt[Unit]('d', "debug")
+      opt[String]('d', "add-dir")
+        .action((x, c) => c.addDir(x))
+        .text("Add directories to the list" +
+          " Apache Velocity will search for templates " +
+          "(default: the current working directory).")
+        .unbounded(),
+
+      opt[String]('j', "add-jar")
+        .action((x, c) => c.addDir(x))
+        .text("Add jars to the list" +
+          " Apache Velocity will search for templates" +
+          "(default: none).")
+        .unbounded(),
+
+      opt[Seq[String]]("set-dir-list")
+        .action((x, c) => c.copy(extraDirs = x))
+        .text("Set the list of directories Apache Velocity will" +
+          s" search for templates (replaces ${OptionNames.addDir})."),
+
+      opt[Seq[String]]("set-jar-list")
+        .action((x, c) => c.copy(extraDirs = x))
+        .text("Set the list of jars Apache Velocity will" +
+          s" search for templates (replaces ${OptionNames.addJar})."),
+
+      opt[Unit]('v', "verbose")
         .action((_, c) => c.copy(verbosityLevel = VerbosityLevel.Verbose))
         .text("Enable debug features like stack traces.")
     )
