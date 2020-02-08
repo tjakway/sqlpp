@@ -37,7 +37,7 @@ trait DelegatingValueSource extends ValueSource {
   override def toVelocityContext: Either[SqlppError, VelocityContext] =
     getValueSource.flatMap(_.toVelocityContext)
 
-  protected def getValueSource: Either[SqlppError, ValueSource]
+  def getValueSource(): Either[SqlppError, ValueSource]
 }
 
 case class PropertySource(prop: Properties) extends ValueSource {

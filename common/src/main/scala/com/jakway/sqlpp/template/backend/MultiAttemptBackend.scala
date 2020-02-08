@@ -1,6 +1,6 @@
 package com.jakway.sqlpp.template.backend
 
-import java.io.File
+import java.io.{File, InputStream}
 
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import com.jakway.sqlpp.template.ValueSource
@@ -19,10 +19,10 @@ class MultiAttemptBackend(override val names: Set[String],
   extends PropertiesBackend(names) {
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def tryLoad[A](zero: (Seq[SqlppError], Option[ValueSource]),
+  def tryLoad[A](zero: (Seq[SqlppError], Option[PropertiesBackend]),
                  in: Seq[A],
-                 loadF: A => Either[SqlppError, ValueSource]):
-    (Seq[SqlppError], Option[ValueSource]) = {
+                 loadF: A => Either[SqlppError, PropertiesBackend]):
+    (Seq[SqlppError], Option[PropertiesBackend]) = {
 
     in.foldLeft(zero) {
       //skip if we already found results
@@ -37,24 +37,28 @@ class MultiAttemptBackend(override val names: Set[String],
     }
   }
 
-  private def loadFile(f: File): Either[SqlppError, ValueSource] = {
+  private def loadFile(f: File): Either[SqlppError, PropertiesBackend] = {
     val fileChecks = Seq(
       CheckFile.checkExists,
       CheckFile.checkIsFile,
       CheckFile.setReadable(true))
 
     CheckFile.composeAll(fileChecks)(f).flatMap { _ =>
-      new PropertiesFileBackend(names, f)
-        .getValueSource
+      val toCheck = new PropertiesFileBackend(names, f)
+
+      toCheck.getValueSource
+             .map(_ => toCheck)
     }
   }
 
   private def loadResource(resourceName: String):
-    Either[SqlppError, ValueSource] = {
+    Either[SqlppError, PropertiesBackend] = {
 
     def f = Try {
-      new PropertiesResourceBackend(names, resourceName)
-        .getValueSource
+      val toCheck = new PropertiesResourceBackend(names, resourceName)
+
+      toCheck.getValueSource
+             .map(_ => toCheck)
     }
 
     TryToEither(new MultiAttemptBackendError(_))(f) match {
@@ -64,8 +68,10 @@ class MultiAttemptBackend(override val names: Set[String],
     }
   }
 
-  override protected def getValueSource: Either[SqlppError, ValueSource] = {
-    val zero: (Seq[SqlppError], Option[ValueSource]) = (Seq.empty, None)
+  //TODO: may want to make this a lazy val so it isn't
+  //rerun in every call to getValueSource or getPropertiesInputStream
+  def getPropertiesBackend: Either[SqlppError, PropertiesBackend] = {
+    val zero: (Seq[SqlppError], Option[PropertiesBackend]) = (Seq.empty, None)
 
     tryLoad(
       tryLoad(zero, files, loadFile),
@@ -85,10 +91,18 @@ class MultiAttemptBackend(override val names: Set[String],
       case (errors, None) => {
         Left(new MultiAttemptBackendError(
           s"Error loading backend " + toString +
-          s" caused by: " + SqlppError.formatErrors(errors)))
+            s" caused by: " + SqlppError.formatErrors(errors)))
 
       }
     }
+  }
+
+  override def getValueSource(): Either[SqlppError, ValueSource] = {
+    getPropertiesBackend.flatMap(_.getValueSource)
+  }
+
+  override def getPropertiesInputStream: Either[SqlppError, InputStream] = {
+    getPropertiesBackend.flatMap(_.getPropertiesInputStream)
   }
 
   override def toString: String = {
