@@ -2,7 +2,7 @@ package com.jakway.sqlpp.config.checked
 
 import java.io.InputStream
 
-import com.jakway.sqlpp.config.Defaults
+import com.jakway.sqlpp.config.{CreateProfileDirOption, Defaults}
 import com.jakway.sqlpp.config.output.OutputTarget
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.{GeneralVelocityOptions, TemplateEngine}
@@ -27,7 +27,8 @@ case class Config(source: InputStream,
                   outputEncoding: String,
                   resourceLoaderTypes: Set[LoaderType],
                   extraTemplateOptions: ExtraTemplateOptions,
-                  templateStringInfo: TemplateStringInfo) {
+                  templateStringInfo: TemplateStringInfo,
+                  createProfileDirOption: CreateProfileDirOption) {
 
   val additionalVelocityProperties: PropertyMap =
     GeneralVelocityOptions(inputEncoding)

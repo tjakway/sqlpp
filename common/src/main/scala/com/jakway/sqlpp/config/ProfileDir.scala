@@ -4,7 +4,7 @@ import java.io.{File, FileFilter}
 
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.backend.PropertiesFileBackend
-import com.jakway.sqlpp.util.TryToEither
+import com.jakway.sqlpp.util.{FileUtil, TryToEither}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.Try
@@ -28,7 +28,8 @@ class ProfileDir(val profileDirLocation: File,
       def f: Try[Set[PropertiesFileBackend]] = Try {
         val backendFiles = backendsDir.listFiles(backendFilesFilter)
         backendFiles.toSet.map(f =>
-          new PropertiesFileBackend(Set(nameWithoutExtension(f)), f))
+          new PropertiesFileBackend(
+            Set(FileUtil.nameWithoutExtension(f)), f))
       }
 
       TryToEither(new FindBackendFilesError(_))(f)
@@ -72,20 +73,6 @@ object ProfileDir {
     extends SqlppError(msg) {
     def this(throwable: Throwable) {
       this(SqlppError.formatThrowableCause(throwable))
-    }
-  }
-
-  /**
-   * see https://stackoverflow.com/questions/941272/how-do-i-trim-a-file-extension-from-a-string-in-java
-   * @param f
-   * @return
-   */
-  private def nameWithoutExtension(f: File): String = {
-    val s = f.getName
-    if(s.contains(".")) {
-      s.substring(0, s.lastIndexOf('.'))
-    } else {
-      s
     }
   }
 }

@@ -1,10 +1,10 @@
-package com.jakway.sqlpp.config.unchecked
+package com.jakway.sqlpp.config
 
 import java.io.File
 import java.util.Formatter
 
+import com.jakway.sqlpp.config.CreateProfileDirOption.Errors.CreateProfileDirOptionError
 import com.jakway.sqlpp.config.error.ConfigError
-import com.jakway.sqlpp.config.unchecked.CreateProfileDirOption.Errors.CreateProfileDirOptionError
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import org.slf4j.{Logger, LoggerFactory}
 

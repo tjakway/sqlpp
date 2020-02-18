@@ -32,4 +32,19 @@ object FileUtil {
     openBufferedOutputStreamWriter[ErrorType](
       encoding, errorF)(() => printStream)
   }
+
+
+  /**
+   * see https://stackoverflow.com/questions/941272/how-do-i-trim-a-file-extension-from-a-string-in-java
+   * @param f
+   * @return
+   */
+  def nameWithoutExtension(f: File): String = {
+    val s = f.getName
+    if(s.contains(".")) {
+      s.substring(0, s.lastIndexOf('.'))
+    } else {
+      s
+    }
+  }
 }

@@ -3,16 +3,16 @@ package com.jakway.sqlpp.config.unchecked
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.charset.Charset
 
-import com.jakway.sqlpp.config.Defaults
-import com.jakway.sqlpp.config.checked
+import com.jakway.sqlpp.config.{CreateProfileDirOption, Defaults, checked}
 import com.jakway.sqlpp.config.entries.ParseOutputPattern
 import com.jakway.sqlpp.config.error.{ConfigError, InvalidLoaderTypesError, NoSourcePassedError}
-import com.jakway.sqlpp.config.output.OutputPattern
+import com.jakway.sqlpp.config.output.{OutputPattern, OutputTarget}
 import com.jakway.sqlpp.config.unchecked.ValidateUncheckedConfig.Errors._
 import com.jakway.sqlpp.error.{CheckFile, CheckString, SqlppError}
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.ExtraTemplateOptions
-import com.jakway.sqlpp.util.TryToEither
+import com.jakway.sqlpp.template.backend.MultiAttemptBackend
+import com.jakway.sqlpp.util.{FileUtil, TryToEither}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.Try
@@ -163,8 +163,53 @@ object ValidateUncheckedConfig {
           checkedEncoding,
           loaderTypes,
           extraTemplateOptions,
-          Defaults.TemplateStringInfo.default)
+          Defaults.TemplateStringInfo.default,
+          createProfileDirOption)
       }
+    }
+
+    /**
+     * TODO: may have to change this if it often returns too many names
+     * that overlap with other backends
+     * @param identifier
+     * @return
+     */
+    private def backendIdentifierToNames(identifier: String): Set[String] = {
+      def nameWithoutExtension = {
+        Try {
+          val f = new File(identifier)
+          Set(FileUtil.nameWithoutExtension(f))
+        }.getOrElse(Set.empty)
+      }
+
+      def nameWithoutSeparator(separator: String): Set[String] = {
+        if(identifier.contains(separator)) {
+          Set(identifier.substring(identifier.lastIndexOf(separator)))
+        } else {
+          Set.empty
+        }
+      }
+
+      (Set(identifier) ++
+        nameWithoutExtension ++
+        nameWithoutSeparator(File.pathSeparator) ++
+        nameWithoutSeparator(File.separator))
+        .map(_.trim)
+        .filter(_.isEmpty)
+    }
+
+    private def outputPatternToOutputTargets(outputPattern: OutputPattern,
+                                             targetBackends: Seq[String]):
+      Seq[OutputTarget] = {
+
+      //convert the backend strings to backend objects
+      val backends = targetBackends.map(backendIdentifier =>
+        new MultiAttemptBackend(
+          backendIdentifierToNames(backendIdentifier),
+          Seq(new File(backendIdentifier)),
+          Seq(backendIdentifier)))
+
+      outputPattern.permutateBackendDests(backends)
     }
 
     private def getUncheckedEncoding(uncheckedConfig: UncheckedConfig): String = {
