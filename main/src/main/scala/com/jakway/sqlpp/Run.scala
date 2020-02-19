@@ -32,8 +32,8 @@ object Run {
   }
 
   def apply(checkedConfig: checked.Config): Either[SqlppError, Unit] = {
+    val ioMap = checkedConfig.ioMap
     for {
-      ioMap <- checkedConfig.getIOMap
       templateEngine <- checkedConfig.getTemplateEngine
       template <- templateEngine
         .loadTemplateFromInputStream(

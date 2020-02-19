@@ -22,7 +22,7 @@ case class TemplateStringInfo(templateSourceKey: String =
                                   .defaultStringResourceRepositoryName)
 
 case class Config(source: InputStream,
-                  outputTargets: Seq[OutputTarget],
+                  ioMap: TemplateEngine.IOMap,
                   inputEncoding: String,
                   outputEncoding: String,
                   resourceLoaderTypes: Set[LoaderType],
@@ -39,7 +39,4 @@ case class Config(source: InputStream,
       resourceLoaderTypes,
       extraTemplateOptions,
       additionalVelocityProperties)
-
-  def getIOMap: Either[SqlppError, TemplateEngine.IOMap] =
-    OutputTarget.toIOMap(outputTargets, outputEncoding)
 }

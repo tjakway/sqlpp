@@ -53,11 +53,10 @@ object Defaults {
         StandardResourceLoaders.FileLoader
       )
 
-    def default(source: InputStream,
-                outputTargets: Seq[OutputTarget]): Config = {
+    def default(source: InputStream): Config = {
       checked.Config(
         source,
-        outputTargets,
+        Map.empty,
         Defaults.defaultEncoding.displayName(),
         Defaults.defaultEncoding.displayName(),
         defaultResourceLoaderTypes,

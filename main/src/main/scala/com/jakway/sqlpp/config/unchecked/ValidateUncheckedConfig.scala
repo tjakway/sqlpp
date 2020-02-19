@@ -1,6 +1,6 @@
 package com.jakway.sqlpp.config.unchecked
 
-import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
+import java.io.{BufferedInputStream, File, FileInputStream, InputStream, Writer}
 import java.nio.charset.Charset
 
 import com.jakway.sqlpp.config.{CreateProfileDirOption, Defaults, checked}
@@ -10,8 +10,9 @@ import com.jakway.sqlpp.config.output.{OutputPattern, OutputTarget}
 import com.jakway.sqlpp.config.unchecked.ValidateUncheckedConfig.Errors._
 import com.jakway.sqlpp.error.{CheckFile, CheckString, SqlppError}
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
+import com.jakway.sqlpp.template.{TemplateEngine, ValueSource}
 import com.jakway.sqlpp.template.TemplateEngine.ExtraTemplateOptions
-import com.jakway.sqlpp.template.backend.MultiAttemptBackend
+import com.jakway.sqlpp.template.backend.{Backend, MultiAttemptBackend}
 import com.jakway.sqlpp.util.{FileUtil, TryToEither}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -130,8 +131,6 @@ object ValidateUncheckedConfig {
 
   private object Check {
     def apply(uncheckedConfig: UncheckedConfig): Either[SqlppError, checked.Config] = {
-      //TODO
-
       val requireFormatSymbol: Boolean =
         uncheckedConfig.targetBackends.size > 1
       val uncheckedEncoding = getUncheckedEncoding(uncheckedConfig)
@@ -155,10 +154,13 @@ object ValidateUncheckedConfig {
           uncheckedConfig.noSourceImpliesStdin)
 
         extraTemplateOptions <- CheckExtraTemplateOptions.apply(uncheckedConfig)
+
+        ioMap <- outputPatternToIOMap(
+          outputPattern, uncheckedConfig.targetBackends)
       } yield {
         checked.Config(
           source,
-          null, //TODO
+          ioMap,
           checkedEncoding,
           checkedEncoding,
           loaderTypes,
@@ -198,9 +200,9 @@ object ValidateUncheckedConfig {
         .filter(_.isEmpty)
     }
 
-    private def outputPatternToOutputTargets(outputPattern: OutputPattern,
-                                             targetBackends: Seq[String]):
-      Seq[OutputTarget] = {
+    private def outputPatternToIOMap(outputPattern: OutputPattern,
+                                     targetBackends: Seq[String]):
+      Either[SqlppError, TemplateEngine.IOMap] = {
 
       //convert the backend strings to backend objects
       val backends = targetBackends.map(backendIdentifier =>
@@ -209,7 +211,12 @@ object ValidateUncheckedConfig {
           Seq(new File(backendIdentifier)),
           Seq(backendIdentifier)))
 
-      outputPattern.permutateBackendDests(backends)
+      outputPattern
+        .permutateBackendDests(backends)
+        //(safely) cast Backend to its superclass ValueSource
+        .map(writerMap => writerMap.map {
+          case (key, value) => (key: ValueSource, value)
+        })
     }
 
     private def getUncheckedEncoding(uncheckedConfig: UncheckedConfig): String = {
