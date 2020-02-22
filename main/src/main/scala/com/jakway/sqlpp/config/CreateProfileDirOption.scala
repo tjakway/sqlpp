@@ -71,7 +71,7 @@ object CreateProfileDirOption {
     object CreateProfileDirFileOperationError {
       def apply(throwable: Throwable): CreateProfileDirFileOperationError = {
         new CreateProfileDirFileOperationError(
-          SqlppError.formatThrowableCause(t)
+          SqlppError.formatThrowableCause(throwable)
         )
       }
     }
@@ -276,11 +276,7 @@ object CreateProfileDirOption {
       _ <- FileUtil.writeString(encoding, errorF)(backendContents, to)
     } yield {}
 
-    for {
-      _ <- is.map(close)
-    } yield {
-      res
-    }
+    is.map(close).flatMap(ignored => res)
   }
 
   private def copyBackends(backends: Map[Backend, File],

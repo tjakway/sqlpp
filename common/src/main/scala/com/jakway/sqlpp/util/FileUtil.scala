@@ -67,7 +67,7 @@ object FileUtil {
       val f = Try(writeTo.write(input))
 
       def closeF: Try[Unit] = {
-        Try(writeTo)
+        Try(writeTo.close())
       }
 
       val additionalMsg: String = s"could not close writer to $dest"
