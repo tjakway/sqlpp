@@ -1,15 +1,12 @@
 package com.jakway.sqlpp.template.backend
 
-import java.io.File
+import java.io.{File, InputStream}
 import java.util.Properties
 
-import com.jakway.sqlpp.config.Constants
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.DelegatingValueSource
 import com.jakway.sqlpp.template.backend.Backend.Lookup.Error.WrongNumberOfMatches
 import com.jakway.sqlpp.template.backend.Backend.NamelessBackendError
-
-import scala.util.Try
 
 /**
  * @param names
@@ -25,6 +22,10 @@ abstract class Backend(val names: Set[String])
       case None => Left(new NamelessBackendError(
           toString + " has no name"))
     }
+
+  def read: Either[SqlppError, InputStream]
+
+  def getFileInDir: File => Either[SqlppError, File]
 }
 
 object Backend {

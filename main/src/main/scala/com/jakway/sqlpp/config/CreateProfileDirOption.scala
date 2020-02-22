@@ -1,12 +1,19 @@
 package com.jakway.sqlpp.config
 
 import java.io.File
+import java.net.URI
+import java.nio.file.{Files, Path, Paths}
 import java.util.Formatter
 
-import com.jakway.sqlpp.config.CreateProfileDirOption.Errors.CreateProfileDirOptionError
+import com.jakway.sqlpp.config.CreateProfileDirOption.Errors.{CreateProfileDirFileOperationError, CreateProfileDirOptionError, ProfileDirectoryAlreadyExistsError}
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
+import com.jakway.sqlpp.template.backend.Backend
+import com.jakway.sqlpp.util.{FileUtil, TryToEither}
 import org.slf4j.{Logger, LoggerFactory}
+import java.io.InputStream
+
+import scala.util.Try
 
 sealed abstract class CreateProfileDirOption {
   def valueName: String
@@ -50,6 +57,28 @@ object CreateProfileDirOption {
   object Errors {
     class CreateProfileDirOptionError(override val msg: String)
       extends ConfigError(msg)
+
+    object CreateProfileDirOptionError {
+      def apply(throwable: Throwable): CreateProfileDirOptionError = {
+        new CreateProfileDirOptionError(
+          SqlppError.formatThrowableCause(throwable))
+      }
+    }
+
+    class CreateProfileDirFileOperationError(override val msg: String)
+      extends CreateProfileDirOptionError(msg)
+
+    object CreateProfileDirFileOperationError {
+      def apply(throwable: Throwable): CreateProfileDirFileOperationError = {
+        new CreateProfileDirFileOperationError(
+          SqlppError.formatThrowableCause(t)
+        )
+      }
+    }
+
+    class ProfileDirectoryAlreadyExistsError(val location: File)
+      extends CreateProfileDirFileOperationError(
+        s"Could not create config directory at $location")
   }
 
   /****************************************************************************/
@@ -185,6 +214,122 @@ object CreateProfileDirOption {
         Right(CreateDefaultProfileDir)
       }
       case Some(x) => parse(x, optionName)
+    }
+  }
+
+  private def readResourceToString(res: String, encoding: String):
+    Either[SqlppError, String] = {
+    def f: Try[String] = Try {
+      def uri: URI = getClass
+        .getResource(res)
+        .toURI
+
+      def resourceAsPath: Path = Paths.get(uri)
+      new String(Files.readAllBytes(resourceAsPath), encoding)
+    }
+
+    TryToEither(CreateProfileDirOptionError.apply)(f)
+  }
+
+  private def readResources(backendResources: Set[String],
+                            encoding: String):
+    Either[SqlppError, Map[String, String]] = {
+
+    val empty: Either[SqlppError, Map[String, String]] =
+      Right(Map.empty)
+
+    backendResources.foldLeft(empty) {
+      case (eAcc, thisResource) => eAcc.flatMap { acc =>
+        readResourceToString(thisResource, encoding)
+          .map(contents => (thisResource, contents))
+          .map {
+            case (resource, contents) =>
+              acc.updated(resource, contents)
+          }
+      }
+    }
+  }
+
+  private def copyBackend(backend: Backend,
+                          to: File,
+                          encoding: String): Either[SqlppError, Unit] = {
+    def close(x: InputStream): Either[SqlppError, Unit] = {
+      def onErrorF: Throwable => SqlppError = { (t: Throwable) =>
+        new CreateProfileDirFileOperationError(
+          s"Error closing InputStream corresponding to backend $Backend: " +
+          SqlppError.formatThrowableCause(t))
+      }
+
+      def f: Try[Unit] = Try(x.close())
+      TryToEither(onErrorF)(f)
+    }
+
+    val is = backend.read
+
+    def errorF = CreateProfileDirFileOperationError.apply _
+
+    //read the backend into a string then write it out to the passed file
+    val res = for {
+      is <- backend.read
+      backendContents <- FileUtil.readIntoString(
+          encoding, errorF)(is)
+      _ <- FileUtil.writeString(encoding, errorF)(backendContents, to)
+    } yield {}
+
+    for {
+      _ <- is.map(close)
+    } yield {
+      res
+    }
+  }
+
+  private def copyBackends(backends: Map[Backend, File],
+                   encoding: String): Either[SqlppError, Unit] = {
+
+    val zero: Either[SqlppError, Unit] = Right({})
+    backends.foldLeft(zero) {
+      case (eAcc, (backend, dest)) => eAcc.flatMap { ignored =>
+        copyBackend(backend, dest, encoding)
+      }
+    }
+  }
+
+  private def assignBackendDests(backends: Set[Backend],
+                         in: File): Either[SqlppError, Map[Backend, File]] = {
+    val zero: Either[SqlppError, Map[Backend, File]] = Right(Map.empty)
+
+    backends.foldLeft(zero) {
+      case (eAcc, thisBackend) => eAcc.flatMap { acc =>
+        thisBackend
+          .getFileInDir(in)
+          .map(res => acc.updated(thisBackend, res))
+      }
+    }
+  }
+
+  /**
+   *
+   * @param dest
+   */
+  def createProfileDir(backends: Set[Backend],
+                       dest: File,
+                       encoding: String):
+    Either[SqlppError, Unit] = {
+
+    if(dest.exists()) {
+      Left(new ProfileDirectoryAlreadyExistsError(
+        dest))
+    } else {
+      if(dest.mkdirs()) {
+
+        for {
+          backendsWithDests <- assignBackendDests(backends, dest)
+          _ <- copyBackends(backendsWithDests, encoding)
+        } yield {}
+      } else {
+        Left(new CreateProfileDirFileOperationError(
+          s"Failed to create config directory $dest"))
+      }
     }
   }
 }

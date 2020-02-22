@@ -1,6 +1,6 @@
 package com.jakway.sqlpp.template.backend
 
-import java.io.InputStream
+import java.io.{File, InputStream}
 
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.backend.PropertiesBackend.PropertiesBackendError
@@ -16,6 +16,8 @@ abstract class PropertiesBackend(override val names: Set[String])
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def getPropertiesInputStream: Either[SqlppError, InputStream]
+
+  override def read: Either[SqlppError, InputStream] = getPropertiesInputStream
 
   override def getValueSource(): Either[SqlppError, ValueSource] = {
     getPropertiesInputStream.flatMap { is =>
@@ -36,6 +38,20 @@ abstract class PropertiesBackend(override val names: Set[String])
 
       TryToEither.handleNested(onError)(res)
     }
+  }
+
+  protected def extension: String = ".xml"
+
+  private def addExtension(ext: String, to: String): String = {
+    if(to.endsWith(ext)) {
+      to
+    } else {
+      to + ext
+    }
+  }
+
+  override def getFileInDir: File => Either[SqlppError, File] = { (dir: File) =>
+    getName.map(name => new File(dir, addExtension(extension, name)))
   }
 }
 

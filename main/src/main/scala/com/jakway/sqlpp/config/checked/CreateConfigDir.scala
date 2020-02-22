@@ -7,14 +7,24 @@ import com.jakway.sqlpp.config.Constants
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.config.output.StandardBackendResources
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
+import com.jakway.sqlpp.template.backend.Backend
 import com.jakway.sqlpp.util.TryToEither
 
 import scala.util.Try
 
-case class CreateConfigDir(dest: File,
-                           additionalBackends: Set[File] = Set.empty) {
+/**
+ * TODO: merge with CreateProfileDirOption
+ * @param dest
+ * @param additionalBackends
+ * @param templatesDirName
+ */
 
-  lazy val templatesDir: File = new File(dest, Constants.templatesDirName)
+case class CreateConfigDir(dest: File,
+                           additionalBackends: Set[File] = Set.empty,
+                           templatesDirName: String =
+                            Constants.templatesDirName) {
+
+  lazy val templatesDir: File = new File(dest, templatesDirName)
 
   private def mkdir(x: File): Either[SqlppError, Unit] = {
     val fs: Seq[CheckFile.FileCheckF] =

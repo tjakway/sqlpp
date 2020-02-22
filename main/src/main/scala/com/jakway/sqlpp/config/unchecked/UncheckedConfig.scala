@@ -4,6 +4,7 @@ import java.io.File
 
 import com.jakway.sqlpp.config.Defaults.{UncheckedConfig => UncheckedConfigDefaults}
 import com.jakway.sqlpp.config.{Constants, Defaults, VerbosityLevel}
+import com.jakway.sqlpp.error.SqlppError
 
 //TODO: add StringRepositoryName parameter (probably
 // will only be used for debugging purposes)
@@ -15,8 +16,8 @@ case class UncheckedConfig(verbosityLevel: VerbosityLevel =
                            targetBackends: Seq[String] = Seq(),
                            addBackendLocations: Set[String] = Set(),
                            resourceLoaderTypes: Set[String] = Set(),
-                           extraDirs: Seq[String],
-                           extraJars: Seq[String],
+                           extraDirs: Seq[String] = Seq(),
+                           extraJars: Seq[String] = Seq(),
                            noCreateProfileDir: Boolean =
                              UncheckedConfigDefaults.defaultNoCreateProfileDir,
                            createProfileDir: Option[String] = None,
@@ -34,6 +35,7 @@ case class UncheckedConfig(verbosityLevel: VerbosityLevel =
 }
 
 object UncheckedConfig {
+  import scopt.OParser
   sealed abstract class CreateProfileDirOption
 
   object CreateProfileDirOption {
@@ -56,8 +58,13 @@ object UncheckedConfig {
     val addJar: String = prefix("add-jar")
   }
 
+  def parseOrExit(defaultConfigDir: String)
+                 (args: Array[String]): UncheckedConfig = {
+    val p = parser(defaultConfigDir)
+    OParser.parse(p, args, UncheckedConfig()).get
+  }
+
   private def parser(defaultConfigDir: String) = {
-    import scopt.OParser
     val builder = OParser.builder[UncheckedConfig]
     import builder._
 
