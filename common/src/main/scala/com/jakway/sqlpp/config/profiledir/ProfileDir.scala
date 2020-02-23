@@ -1,7 +1,8 @@
-package com.jakway.sqlpp.config
+package com.jakway.sqlpp.config.profiledir
 
 import java.io.{File, FileFilter}
 
+import com.jakway.sqlpp.config.{CommonDefaults, Constants}
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.backend.PropertiesFileBackend
 import com.jakway.sqlpp.util.{FileUtil, TryToEither}
