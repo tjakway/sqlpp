@@ -217,39 +217,6 @@ object CreateProfileDirOption {
     }
   }
 
-  private def readResourceToString(res: String, encoding: String):
-    Either[SqlppError, String] = {
-    def f: Try[String] = Try {
-      def uri: URI = getClass
-        .getResource(res)
-        .toURI
-
-      def resourceAsPath: Path = Paths.get(uri)
-      new String(Files.readAllBytes(resourceAsPath), encoding)
-    }
-
-    TryToEither(CreateProfileDirOptionError.apply)(f)
-  }
-
-  private def readResources(backendResources: Set[String],
-                            encoding: String):
-    Either[SqlppError, Map[String, String]] = {
-
-    val empty: Either[SqlppError, Map[String, String]] =
-      Right(Map.empty)
-
-    backendResources.foldLeft(empty) {
-      case (eAcc, thisResource) => eAcc.flatMap { acc =>
-        readResourceToString(thisResource, encoding)
-          .map(contents => (thisResource, contents))
-          .map {
-            case (resource, contents) =>
-              acc.updated(resource, contents)
-          }
-      }
-    }
-  }
-
   private def copyBackend(backend: Backend,
                           to: File,
                           encoding: String): Either[SqlppError, Unit] = {
