@@ -3,7 +3,7 @@ package com.jakway.sqlpp.config
 import java.io.{File, InputStream}
 import java.util.Formatter
 
-import com.jakway.sqlpp.config.CreateProfileDirOption.Errors.{CreateProfileDirFileOperationError, CreateProfileDirOptionError, ProfileDirectoryAlreadyExistsError}
+import com.jakway.sqlpp.config.CreateProfileDirOption.Errors.{CreateProfileDirFileOperationError, CreateProfileDirOptionError, DeleteProfileDirError, ProfileDirectoryAlreadyExistsError}
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import com.jakway.sqlpp.template.backend.Backend
@@ -76,6 +76,13 @@ object CreateProfileDirOption {
     class ProfileDirectoryAlreadyExistsError(val location: File)
       extends CreateProfileDirFileOperationError(
         s"Could not create config directory at $location")
+
+    class DeleteProfileDirError(val profileDir: File,
+                                val cause: String,
+                                val precedingError: SqlppError)
+      extends CreateProfileDirOptionError(s"Failed to delete profile dir" +
+        s" $profileDir due to $cause while trying to clean up" +
+        s" after main error $precedingError")
   }
 
   /****************************************************************************/
@@ -270,17 +277,20 @@ object CreateProfileDirOption {
   /**
    *
    * @param dest
+   * @param deleteOnFailure whether to remove the directory if profile creation fails for any reason
+   *                        except that the profile directory already exists
    */
   def createProfileDir(backends: Set[Backend],
                        dest: File,
-                       encoding: String):
+                       encoding: String,
+                       deleteOnFailure: Boolean):
     Either[SqlppError, Unit] = {
 
     if(dest.exists()) {
       Left(new ProfileDirectoryAlreadyExistsError(
         dest))
     } else {
-      if(dest.mkdirs()) {
+      val res = if(dest.mkdirs()) {
 
         for {
           backendsWithDests <- assignBackendDests(backends, dest)
@@ -289,6 +299,24 @@ object CreateProfileDirOption {
       } else {
         Left(new CreateProfileDirFileOperationError(
           s"Failed to create config directory $dest"))
+      }
+
+      res match {
+          //DeleteProfileDirError will report the original error
+          //as well as any error caused by the deletion
+        case Left(e) if deleteOnFailure => {
+          def errWithMsg: String => SqlppError =
+            new DeleteProfileDirError(dest, _, e)
+
+          def errorF: Throwable => SqlppError = (t: Throwable) =>
+            errWithMsg(SqlppError.formatThrowable(t))
+
+          FileUtil.recursivelyDelete(dest, errorF, errWithMsg) match {
+            case Right(_) => res
+            case q@Left(_) => q
+          }
+        }
+        case _ => res
       }
     }
   }
