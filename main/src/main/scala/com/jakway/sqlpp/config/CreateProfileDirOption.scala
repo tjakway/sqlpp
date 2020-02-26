@@ -304,7 +304,7 @@ object CreateProfileDirOption {
       res match {
           //DeleteProfileDirError will report the original error
           //as well as any error caused by the deletion
-        case Left(e) if deleteOnFailure => {
+        case Left(e) if deleteOnFailure && dest.exists() => {
           def errWithMsg: String => SqlppError =
             new DeleteProfileDirError(dest, _, e)
 
