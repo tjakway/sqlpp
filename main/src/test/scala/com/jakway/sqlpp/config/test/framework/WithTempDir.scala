@@ -1,10 +1,11 @@
 package com.jakway.sqlpp.config.test.framework
 
 import java.io.File
+import java.nio.file.Files
 
 import com.jakway.sqlpp.config.test.error.TestError
 import com.jakway.sqlpp.config.test.profiledir.CreateProfileDirProperties.CreateProfileDirTestException
-import com.jakway.sqlpp.error.SqlppError
+import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import com.jakway.sqlpp.util.FileUtil
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -17,24 +18,31 @@ trait WithTempDir {
 
   protected def tempDirPrefix: String = defaultTempDirPrefix
 
-  private def formatTempDirTemplateString(prefix: String,
-                                          minimumXs: Int): String = {
-    assert(minimumXs > 0)
+  protected def checkDir(dir: File): Either[SqlppError, Unit] = {
+    val checks = Seq(
+      CheckFile.checkExists,
+      CheckFile.checkIsDirectory,
+      CheckFile.setExecutable(true),
+      CheckFile.setReadable(true),
+      CheckFile.setWritable(true))
 
-    val templateEnding: String = "." +
-      (1 to minimumXs).map(_ => "X")
-
-    if(prefix.endsWith(templateEnding)) {
-      prefix
-    } else {
-      prefix + templateEnding
-    }
+    CheckFile.composeAll(checks)(dir)
   }
 
   protected def mkTempDir(): Unit = {
     synchronized {
-      //TODO
-      tempDir = Some(???)
+      tempDir = Some(
+        Files.createTempDirectory(tempDirPrefix).toFile)
+
+      tempDir.foreach { d =>
+        if(!d.exists()) {
+          d.mkdir()
+        }
+
+        checkDir(d).right.get
+      }
+
+      assert(tempDir.isDefined)
     }
   }
 
@@ -65,7 +73,7 @@ trait WithTempDir {
 }
 
 object WithTempDir {
-  val defaultTempDirPrefix: String = "sqlpp_with_temp_dir"
+  val defaultTempDirPrefix: String = "sqlpp"
 
   class WithTempDirError(override val msg: String)
     extends TestError(msg) {

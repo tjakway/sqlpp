@@ -28,9 +28,6 @@ object CreateProfileDirProperties {
   class CreateProfileDirTestException(val msg: String)
     extends RuntimeException(msg)
 
-  //TODO
-  def testCleanUp(tempDir: File): Unit = ???
-
   abstract class CreateProfileDirTest(val backends: Set[Backend],
                                       val encoding: String,
                                       val deleteOnFailure: Boolean) {
