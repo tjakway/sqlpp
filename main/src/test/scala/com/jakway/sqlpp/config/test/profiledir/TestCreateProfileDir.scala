@@ -251,7 +251,7 @@ object GenCreateProfileDirTest {
     }
 
     //TODO
-    def apply: Gen[GenCreateProfileDirFailureTest] =
+    def apply: Gen[CreateProfileDirFailureTest] =
       dirAlreadyExistsTest
       //Gen.oneOf(dirAlreadyExistsTest, ....)
   }
