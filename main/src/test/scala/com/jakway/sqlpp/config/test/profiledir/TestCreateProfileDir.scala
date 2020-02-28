@@ -126,9 +126,9 @@ object CreateProfileDirProperties {
       fmt.format(fmtString,
         getClass.getName, tab,
         profDir.getCanonicalPath, tab,
-        backends, tab,
+        backends.toString, tab,
         encoding, tab,
-        deleteOnFailure, tab,
+        deleteOnFailure.toString, tab,
         testName, tab)
 
 
@@ -232,5 +232,5 @@ object GenCreateProfileDirTest {
   }
 
   //TODO
-  def genCreateProfileDirFailureTest: Gen[GenCreateProfileDirFailureTest] = ???
+  def genCreateProfileDirFailureTest: Gen[CreateProfileDirFailureTest] = ???
 }
