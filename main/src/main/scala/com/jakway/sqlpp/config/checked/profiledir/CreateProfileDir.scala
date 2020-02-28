@@ -76,7 +76,7 @@ object CreateProfileDir {
   Either[SqlppError, Unit] = {
 
     if(dest.exists()) {
-      Left(new ProfileDirectoryAlreadyExistsError(
+      Left(new ProfileDirAlreadyExistsError(
         dest))
     } else {
       val res = if(dest.mkdirs()) {
