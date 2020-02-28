@@ -1,16 +1,11 @@
 package com.jakway.sqlpp.config
 
-import java.io.{File, InputStream}
+import java.io.File
 import java.util.Formatter
 
-import com.jakway.sqlpp.config.CreateProfileDirOption.Errors.{CreateProfileDirFileOperationError, CreateProfileDirOptionError, DeleteProfileDirError, ProfileDirectoryAlreadyExistsError}
 import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.{CheckFile, SqlppError}
-import com.jakway.sqlpp.template.backend.Backend
-import com.jakway.sqlpp.util.{FileUtil, TryToEither}
 import org.slf4j.{Logger, LoggerFactory}
-
-import scala.util.Try
 
 sealed abstract class CreateProfileDirOption {
   def valueName: String
