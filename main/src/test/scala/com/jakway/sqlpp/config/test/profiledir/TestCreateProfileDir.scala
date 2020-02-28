@@ -11,7 +11,7 @@ import com.jakway.sqlpp.config.test.framework.WithTempDirBeforeAndAfter
 import com.jakway.sqlpp.config.test.gen.GenUtil
 import com.jakway.sqlpp.config.test.profiledir.CreateProfileDirProperties._
 import com.jakway.sqlpp.config.test.testconfig.{GenTestConfig, PrintConfig, WithDefaultTestConfig}
-import com.jakway.sqlpp.error.SqlppError
+import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import com.jakway.sqlpp.template.backend.Backend
 import com.jakway.sqlpp.util.TryToEither
 import org.scalacheck.{Arbitrary, Gen}
@@ -61,6 +61,10 @@ class CreateProfileDirProperties
 object CreateProfileDirProperties {
   class CreateProfileDirTestError(override val msg: String)
     extends TestError(msg)
+
+  class CreateProfileDirTestIOError(val throwable: Throwable)
+    extends CreateProfileDirTestError(
+      SqlppError.formatThrowableCause(throwable))
 
   class CreateProfileDirTestUncaughtExceptionError(val throwable: Throwable)
     extends CreateProfileDirTestError(
@@ -219,6 +223,28 @@ object GenCreateProfileDirTest {
                                      genBackends: Gen[Set[Backend]]):
     Gen[CreateProfileDirSuccessTest] = {
 
+    def createTempDirIfNotExists: Either[SqlppError, Unit] = {
+
+      def mk: Try[Unit] = Try {
+        if(!tempDir.exists()) {
+          Files.createDirectories(tempDir.toPath)
+        }
+      }
+
+      //check and set the needed properties & permissions
+      val checks = Seq(
+        CheckFile.checkExists,
+        CheckFile.checkIsDirectory,
+        CheckFile.setReadable(true),
+        CheckFile.setWritable(true),
+        CheckFile.setExecutable(true))
+
+      for {
+        _ <- TryToEither(new CreateProfileDirTestIOError(_))(mk)
+        _ <- CheckFile.composeAll(checks)(tempDir)
+      } yield {}
+    }
+
     def genProfDir: Gen[File] = {
       val profDir = Files.createTempDirectory(tempDir.toPath, prefix)
       if(profDir.toFile.exists()) {
@@ -230,6 +256,9 @@ object GenCreateProfileDirTest {
 
 
     val genDeleteOnFailure: Gen[Boolean] = Arbitrary.arbBool.arbitrary
+
+    //warning: throws on error
+    createTempDirIfNotExists.right.get
 
     for {
       profDir <- genProfDir
