@@ -110,4 +110,7 @@ object CreateProfileDir {
     }
   }
 
+  def checkProfileDirPermissions(dir: File): Either[SqlppError, Unit] = {
+
+  }
 }

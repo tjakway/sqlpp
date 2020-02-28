@@ -51,38 +51,14 @@ object CreateProfileDirOption {
 
   /****************************************************************************/
 
-  object Errors {
-    class CreateProfileDirOptionError(override val msg: String)
-      extends ConfigError(msg)
+  class CreateProfileDirOptionError(override val msg: String)
+    extends ConfigError(msg)
 
-    object CreateProfileDirOptionError {
-      def apply(throwable: Throwable): CreateProfileDirOptionError = {
-        new CreateProfileDirOptionError(
-          SqlppError.formatThrowableCause(throwable))
-      }
+  object CreateProfileDirOptionError {
+    def apply(throwable: Throwable): CreateProfileDirOptionError = {
+      new CreateProfileDirOptionError(
+        SqlppError.formatThrowableCause(throwable))
     }
-
-    class CreateProfileDirFileOperationError(override val msg: String)
-      extends CreateProfileDirOptionError(msg)
-
-    object CreateProfileDirFileOperationError {
-      def apply(throwable: Throwable): CreateProfileDirFileOperationError = {
-        new CreateProfileDirFileOperationError(
-          SqlppError.formatThrowableCause(throwable)
-        )
-      }
-    }
-
-    class ProfileDirectoryAlreadyExistsError(val location: File)
-      extends CreateProfileDirFileOperationError(
-        s"Could not create config directory at $location")
-
-    class DeleteProfileDirError(val profileDir: File,
-                                val cause: String,
-                                val precedingError: SqlppError)
-      extends CreateProfileDirOptionError(s"Failed to delete profile dir" +
-        s" $profileDir due to $cause while trying to clean up" +
-        s" after main error $precedingError")
   }
 
   /****************************************************************************/
