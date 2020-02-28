@@ -1,10 +1,11 @@
-package com.jakway.sqlpp.config.test
+package com.jakway.sqlpp.config.test.testconfig
 
 import java.nio.charset.StandardCharsets
 
 import com.jakway.sqlpp.config.Defaults
 import com.jakway.sqlpp.config.checked.TemplateStringInfo
-import com.jakway.sqlpp.config.test.TestConfig.ReadTemplateEngineTestOptions
+import com.jakway.sqlpp.config.test.TestResources
+import com.jakway.sqlpp.config.test.testconfig.TestConfig.ReadTemplateEngineTestOptions
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.GeneralVelocityOptions
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType

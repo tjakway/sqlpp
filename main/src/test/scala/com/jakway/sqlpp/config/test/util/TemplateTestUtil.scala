@@ -4,8 +4,8 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.Base64
 
-import com.jakway.sqlpp.config.test.TestConfig
 import com.jakway.sqlpp.config.test.error.TestError
+import com.jakway.sqlpp.config.test.testconfig.TestConfig
 import com.jakway.sqlpp.config.test.util.TemplateTestUtil.HashTemplateSourceError
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.TemplateEngine

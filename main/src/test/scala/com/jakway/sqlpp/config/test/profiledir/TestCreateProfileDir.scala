@@ -6,11 +6,11 @@ import java.util.Formatter
 
 import com.jakway.sqlpp.config.entries.ParseOutputPattern
 import com.jakway.sqlpp.config.output.StdoutOutputPattern
-import com.jakway.sqlpp.config.test.{GenTestConfig, TestConfig, WithDefaultTestConfig}
+import com.jakway.sqlpp.config.test.WithDefaultTestConfig
 import com.jakway.sqlpp.config.test.error.TestError
 import com.jakway.sqlpp.config.test.gen.GenUtil
 import com.jakway.sqlpp.config.test.profiledir.CreateProfileDirProperties.{CheckOutcomeF, CreateProfileDirFailureTest, CreateProfileDirSuccessTest, CreateProfileDirTestException, ExpectedDifferentOutcomeError}
-import com.jakway.sqlpp.config.test.testconfig.PrintConfig
+import com.jakway.sqlpp.config.test.testconfig.{GenTestConfig, PrintConfig, WithDefaultTestConfig}
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.backend.Backend
 import com.jakway.sqlpp.util.{FileUtil, TryToEither}

@@ -1,6 +1,6 @@
 package com.jakway.sqlpp.config.test.template
 
-import com.jakway.sqlpp.config.test.TestConfig.ReadTemplateEngineTestOptions
+import com.jakway.sqlpp.config.test.testconfig.TestConfig.ReadTemplateEngineTestOptions
 import com.jakway.sqlpp.config.test.template.ParseTest.Errors.{AttributeError, ElementError, ParseAttributeContentsError, UnexpectedElementError}
 import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.{BackendName, BackendResult, RequiredBackendError}
 import com.jakway.sqlpp.config.test.util.LogEither

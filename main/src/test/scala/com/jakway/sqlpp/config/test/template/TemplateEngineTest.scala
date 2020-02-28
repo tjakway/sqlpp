@@ -3,10 +3,10 @@ package com.jakway.sqlpp.config.test.template
 import java.io.{ByteArrayInputStream, InputStream, StringWriter, Writer}
 import java.nio.charset.StandardCharsets
 
-import com.jakway.sqlpp.config.test.WithDefaultTestConfig
 import com.jakway.sqlpp.config.test.error.TestError
 import com.jakway.sqlpp.config.test.template.TemplateEngineTest.{CannotFindBackendResultError, EmptyBackendResultError}
 import com.jakway.sqlpp.config.test.template.TemplateEngineTestSet.BackendResult
+import com.jakway.sqlpp.config.test.testconfig.WithDefaultTestConfig
 import com.jakway.sqlpp.config.test.util.{TemplateTestUtil, TestUtil}
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
