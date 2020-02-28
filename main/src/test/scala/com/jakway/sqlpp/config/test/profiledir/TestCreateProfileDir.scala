@@ -4,7 +4,10 @@ import java.io.File
 import java.nio.file.Files
 import java.util.Formatter
 
+import com.jakway.sqlpp.config.checked.profiledir.errors.ProfileDirAlreadyExistsError
 import com.jakway.sqlpp.config.test.error.TestError
+import com.jakway.sqlpp.config.test.framework.WithTempDir
+import com.jakway.sqlpp.config.test.gen.GenUtil
 import com.jakway.sqlpp.config.test.profiledir.CreateProfileDirProperties._
 import com.jakway.sqlpp.config.test.testconfig.{GenTestConfig, PrintConfig, WithDefaultTestConfig}
 import com.jakway.sqlpp.error.SqlppError
@@ -20,12 +23,20 @@ import scala.util.Try
 class CreateProfileDirProperties
   extends AnyPropSpec
     with Matchers
-    with WithDefaultTestConfig {
+    with WithDefaultTestConfig
+    with WithTempDir {
   import GenCreateProfileDirTest._
   import ScalaCheckPropertyChecks._
 
+  def options: GenCreateProfileDirTest.Options =
+    new GenCreateProfileDirTest.Options(
+      getTempDir,
+      //TODO: may want to actually gen backends
+      genBackends = GenUtil.const(testConfig.getTestBackends.right.get))
+
   property("Make sure we can read our own test failure error messages") {
-    forAll(genCreateProfileDirFailureTest) { test =>
+    forAll(genCreateProfileDirFailureTest(options)) {
+      (test: CreateProfileDirFailureTest) =>
       class FailureTestToStringException(override val msg: String)
         extends CreateProfileDirTestException(msg) {
         def this(throwable: Throwable) {
@@ -203,7 +214,7 @@ object GenCreateProfileDirTest {
   }
 
   private class GenCreateProfileDirFailureTest(val options: Options) {
-    def expectError(successTest: CreateProfileDirSuccessTest)
+    private def expectError(successTest: CreateProfileDirSuccessTest)
                    (expectedErrorType: Class[_],
                     testName: String): CreateProfileDirFailureTest = {
 
@@ -227,10 +238,26 @@ object GenCreateProfileDirTest {
         .fromSuccessTest(successTest)(checkF, testName)
     }
 
+    private def dirAlreadyExistsTest = {
+      genCreateProfileDirSuccessTest(options)
+        .map { test =>
+          assert(!test.profDir.exists())
+          Files.createDirectory(test.profDir.toPath)
+          assert(test.profDir.exists())
+
+          expectError(test)(
+            classOf[ProfileDirAlreadyExistsError], "TestProfileDirAlreadyExists")
+        }
+    }
+
     //TODO
-    def apply: Gen[GenCreateProfileDirFailureTest] = ???
+    def apply: Gen[GenCreateProfileDirFailureTest] =
+      dirAlreadyExistsTest
+      //Gen.oneOf(dirAlreadyExistsTest, ....)
   }
 
-  //TODO
-  def genCreateProfileDirFailureTest: Gen[CreateProfileDirFailureTest] = ???
+  def genCreateProfileDirFailureTest: Options =>
+    Gen[CreateProfileDirFailureTest] =
+    new GenCreateProfileDirFailureTest(_).apply
+
 }
