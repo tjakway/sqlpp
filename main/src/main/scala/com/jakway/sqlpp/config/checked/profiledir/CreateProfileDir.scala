@@ -2,7 +2,7 @@ package com.jakway.sqlpp.config.checked.profiledir
 
 import java.io.{File, InputStream}
 
-import com.jakway.sqlpp.error.SqlppError
+import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import com.jakway.sqlpp.template.backend.Backend
 import com.jakway.sqlpp.util.{FileUtil, TryToEither}
 import com.jakway.sqlpp.config.checked.profiledir.errors._
@@ -84,6 +84,7 @@ object CreateProfileDir {
         for {
           backendsWithDests <- assignBackendDests(backends, dest)
           _ <- copyBackends(backendsWithDests, encoding)
+          _ <- checkProfileDirPermissions(dest)
         } yield {}
       } else {
         Left(new CreateProfileDirFileOperationError(
@@ -110,7 +111,20 @@ object CreateProfileDir {
     }
   }
 
+  /**
+   * TODO: add checks for the contents of the directory instead of just
+   * the directory itself
+   * @param dir
+   * @return
+   */
   def checkProfileDirPermissions(dir: File): Either[SqlppError, Unit] = {
+    val checks = Seq(
+      CheckFile.checkExists,
+      CheckFile.checkIsDirectory,
+      CheckFile.checkReadable,
+      CheckFile.checkExecutable,
+    )
 
+    CheckFile.composeAll(checks)(dir)
   }
 }
