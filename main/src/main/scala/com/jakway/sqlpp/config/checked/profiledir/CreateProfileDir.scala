@@ -2,10 +2,10 @@ package com.jakway.sqlpp.config.checked.profiledir
 
 import java.io.{File, InputStream}
 
-import com.jakway.sqlpp.config.CreateProfileDirOption.Errors.{CreateProfileDirFileOperationError, DeleteProfileDirError, ProfileDirectoryAlreadyExistsError}
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.backend.Backend
 import com.jakway.sqlpp.util.{FileUtil, TryToEither}
+import com.jakway.sqlpp.config.checked.profiledir.errors._
 
 import scala.util.Try
 
