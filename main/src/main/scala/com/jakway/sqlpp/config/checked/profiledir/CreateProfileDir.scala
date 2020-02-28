@@ -6,6 +6,7 @@ import com.jakway.sqlpp.error.{CheckFile, SqlppError}
 import com.jakway.sqlpp.template.backend.Backend
 import com.jakway.sqlpp.util.{FileUtil, TryToEither}
 import com.jakway.sqlpp.config.checked.profiledir.errors._
+import com.jakway.sqlpp.config.profiledir.ProfileDir
 
 import scala.util.Try
 
@@ -63,6 +64,30 @@ object CreateProfileDir {
     }
   }
 
+  def mkdirWithWritePermissions(dir: File): Either[SqlppError, Unit] = {
+    def mkdir: Either[SqlppError, Unit] = {
+      if(dir.mkdir()) {
+        Right({})
+      } else {
+        Left(new CreateProfileDirFileOperationError(
+          s"Failed to create config directory $dir"))
+      }
+    }
+
+    val checks = Seq(
+      CheckFile.checkExists,
+      CheckFile.checkIsDirectory,
+      CheckFile.setWritable(true),
+      CheckFile.setExecutable(true),
+      CheckFile.setReadable(true)
+    )
+
+    for {
+      _ <- mkdir
+      _ <- CheckFile.composeAll(checks)(dir)
+    } yield {}
+  }
+
   /**
    *
    * @param dest
@@ -81,8 +106,13 @@ object CreateProfileDir {
     } else {
       val res = if(dest.mkdirs()) {
 
+        val backendsDir: File = ProfileDir.getBackendsDir(dest)
+
         for {
-          backendsWithDests <- assignBackendDests(backends, dest)
+          //create the backends dir if it doesn't already exist
+          _ <- mkdirWithWritePermissions(backendsDir)
+
+          backendsWithDests <- assignBackendDests(backends, backendsDir)
           _ <- copyBackends(backendsWithDests, encoding)
           _ <- checkProfileDirPermissions(dest)
         } yield {}

@@ -16,8 +16,7 @@ class ProfileDir(val profileDirLocation: File,
   import ProfileDir._
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  val backendsDir: File =
-    new File(profileDirLocation, Constants.Profile.backendsDirName)
+  val backendsDir: File = getBackendsDir(profileDirLocation)
 
   def getBackends: Either[SqlppError, Set[PropertiesFileBackend]] = {
     if(backendsDir.exists()) {
@@ -76,4 +75,7 @@ object ProfileDir {
       this(SqlppError.formatThrowableCause(throwable))
     }
   }
+
+  def getBackendsDir(profileDirLocation: File): File =
+    new File(profileDirLocation, Constants.Profile.backendsDirName)
 }
