@@ -6,7 +6,7 @@ import java.util.Formatter
 
 import com.jakway.sqlpp.config.checked.profiledir.errors.ProfileDirAlreadyExistsError
 import com.jakway.sqlpp.config.test.error.TestError
-import com.jakway.sqlpp.config.test.framework.WithTempDir
+import com.jakway.sqlpp.config.test.framework.WithTempDirBeforeAndAfter
 import com.jakway.sqlpp.config.test.gen.GenUtil
 import com.jakway.sqlpp.config.test.profiledir.CreateProfileDirProperties._
 import com.jakway.sqlpp.config.test.testconfig.{GenTestConfig, PrintConfig, WithDefaultTestConfig}
@@ -24,11 +24,11 @@ class CreateProfileDirProperties
   extends AnyPropSpec
     with Matchers
     with WithDefaultTestConfig
-    with WithTempDir {
+    with WithTempDirBeforeAndAfter {
   import GenCreateProfileDirTest._
   import ScalaCheckPropertyChecks._
 
-  def options: GenCreateProfileDirTest.Options =
+  lazy val options: GenCreateProfileDirTest.Options =
     new GenCreateProfileDirTest.Options(
       getTempDir,
       //TODO: may want to actually gen backends
