@@ -155,8 +155,9 @@ object ValidateUncheckedConfig {
 
         extraTemplateOptions <- CheckExtraTemplateOptions.apply(uncheckedConfig)
 
-        ioMap <- outputPatternToIOMap(
+        ioRes <- outputPatternToIOMap(
           outputPattern, uncheckedConfig.targetBackends)
+        (ioMap, backends) = ioRes
       } yield {
         checked.Config(
           source,
@@ -166,7 +167,8 @@ object ValidateUncheckedConfig {
           loaderTypes,
           extraTemplateOptions,
           Defaults.TemplateStringInfo.default,
-          createProfileDirOption)
+          createProfileDirOption,
+          backends)
       }
     }
 
@@ -202,7 +204,7 @@ object ValidateUncheckedConfig {
 
     private def outputPatternToIOMap(outputPattern: OutputPattern,
                                      targetBackends: Seq[String]):
-      Either[SqlppError, TemplateEngine.IOMap] = {
+      Either[SqlppError, (TemplateEngine.IOMap, Set[Backend])] = {
 
       //convert the backend strings to backend objects
       val backends = targetBackends.map(backendIdentifier =>
@@ -217,6 +219,7 @@ object ValidateUncheckedConfig {
         .map(writerMap => writerMap.map {
           case (key, value) => (key: ValueSource, value)
         })
+        .map(res => (res, backends.toSet))
     }
 
     private def getUncheckedEncoding(uncheckedConfig: UncheckedConfig): String = {

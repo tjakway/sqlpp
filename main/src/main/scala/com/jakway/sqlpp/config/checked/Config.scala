@@ -8,6 +8,7 @@ import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.{GeneralVelocityOptions, TemplateEngine}
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.{ExtraTemplateOptions, PropertyMap}
+import com.jakway.sqlpp.template.backend.Backend
 
 /**
  * TODO: consolidate stringResourceRepositoryName with ExtraTemplateOptions
@@ -28,7 +29,8 @@ case class Config(source: InputStream,
                   resourceLoaderTypes: Set[LoaderType],
                   extraTemplateOptions: ExtraTemplateOptions,
                   templateStringInfo: TemplateStringInfo,
-                  createProfileDirOption: CreateProfileDirOption) {
+                  createProfileDirOption: CreateProfileDirOption,
+                  backends: Set[Backend]) {
 
   val additionalVelocityProperties: PropertyMap =
     GeneralVelocityOptions(inputEncoding)

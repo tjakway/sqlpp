@@ -186,7 +186,7 @@ object UncheckedConfig {
 
       opt[String]("create-profile-dir")
         .action((x, c) => c.copy(createProfileDir = Some(x)))
-        .text(s"default location: $defaultConfigDir"),
+        .text(s"default location is XDG-compliant"),
 
       opt[String]('d', "add-dir")
         .action((x, c) => c.addDir(x))
