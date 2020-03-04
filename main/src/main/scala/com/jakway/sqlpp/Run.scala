@@ -34,6 +34,24 @@ object Run {
     fmt.toString
   }
 
+
+  /**
+   * *******************************
+   * *******Entry Point*************
+   * *******************************
+   */
+  def main(args: Array[String]): Unit = {
+    val res = apply(args)
+    res.errorMessage.foreach(System.err.println)
+    System.exit(res.exitCode)
+  }
+  /**
+   * *******************************
+   * *******************************
+   * *******************************
+   */
+
+
   def parse(args: Array[String]):
     Either[error.SqlppError, checked.Config] = {
     UncheckedConfig
