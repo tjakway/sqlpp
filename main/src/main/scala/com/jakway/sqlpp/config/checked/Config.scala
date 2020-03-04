@@ -30,6 +30,7 @@ case class Config(source: InputStream,
                   extraTemplateOptions: ExtraTemplateOptions,
                   templateStringInfo: TemplateStringInfo,
                   createProfileDirOption: CreateProfileDirOption,
+                  deleteProfileDirOnCreationFailure: Boolean,
                   backends: Set[Backend]) {
 
   val additionalVelocityProperties: PropertyMap =

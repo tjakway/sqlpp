@@ -24,6 +24,8 @@ case class UncheckedConfig(verbosityLevel: VerbosityLevel =
                            noCreateProfileDir: Boolean =
                              UncheckedConfigDefaults.defaultNoCreateProfileDir,
                            createProfileDir: Option[String] = None,
+                           deleteProfileDirOnCreationFailure: Boolean =
+                             Defaults.DataDir.deleteOnFailure,
                            allowOverwrite: Boolean = Defaults.allowOverwrite,
                            noSourceImpliesStdin: Boolean =
                              Defaults.noSourceImpliesStdin) {
@@ -76,12 +78,11 @@ object UncheckedConfig {
   @Deprecated
   def parseOrExit(defaultConfigDir: String)
                  (args: Array[String]): UncheckedConfig = {
-    val p = parser(defaultConfigDir)
+    val p = parser
     OParser.parse(p, args, UncheckedConfig()).get
   }
 
-  def parse(defaultConfigDir: String)
-           (args: Array[String]): Either[SqlppError, UncheckedConfig] = {
+  def parse(args: Array[String]): Either[SqlppError, UncheckedConfig] = {
     var errorMessage: Option[String] = None
 
     def getErrorMessage: Option[String] = {
@@ -102,7 +103,7 @@ object UncheckedConfig {
     }
 
     val res = OParser.parse(
-      parser(defaultConfigDir),
+      parser,
       args,
       UncheckedConfig(),
       setup)
@@ -131,7 +132,7 @@ object UncheckedConfig {
     }
   }
 
-  private def parser(defaultConfigDir: String) = {
+  private def parser = {
     val builder = OParser.builder[UncheckedConfig]
     import builder._
 
@@ -186,7 +187,12 @@ object UncheckedConfig {
 
       opt[String]("create-profile-dir")
         .action((x, c) => c.copy(createProfileDir = Some(x)))
-        .text(s"default location is XDG-compliant"),
+        .text(s"Default location is XDG-compliant"),
+
+      opt[Boolean]("delete-profile-dir-on-creation-failure")
+        .action((x, c) => c.copy(deleteProfileDirOnCreationFailure = x))
+        .text("Clean up our attempt to create a profile dir if we fail" +
+          s" (default: ${Defaults.DataDir.deleteOnFailure}"),
 
       opt[String]('d', "add-dir")
         .action((x, c) => c.addDir(x))

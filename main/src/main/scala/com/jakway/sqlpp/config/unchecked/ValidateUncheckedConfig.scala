@@ -168,6 +168,7 @@ object ValidateUncheckedConfig {
           extraTemplateOptions,
           Defaults.TemplateStringInfo.default,
           createProfileDirOption,
+          uncheckedConfig.deleteProfileDirOnCreationFailure,
           backends)
       }
     }

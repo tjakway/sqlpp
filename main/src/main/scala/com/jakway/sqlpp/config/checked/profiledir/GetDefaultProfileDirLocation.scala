@@ -6,7 +6,7 @@ import com.jakway.sqlpp.config.{Defaults, PrioritizedPref}
 import com.jakway.sqlpp.config.env.{SqlppSystemEnvReader, SqlppSystemPropertyReader, XdgConfigHome}
 import com.jakway.sqlpp.error.SqlppError
 
-object GetDefaultProfileDir
+object GetDefaultProfileDirLocation
   extends PrioritizedPref[File](GetDefaultProfileDirGetters.orderedGetters)
 
 

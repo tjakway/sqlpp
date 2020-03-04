@@ -2,9 +2,10 @@ package com.jakway.sqlpp
 
 import java.io.File
 
-import com.jakway.sqlpp.config.CreateProfileDirOption.{CreateDefaultProfileDir, NoCreateProfileDir}
+import com.jakway.sqlpp.config.CreateProfileDirOption.{CreateDefaultProfileDir, CreateUserPassedProfileDir, NoCreateProfileDir}
 import com.jakway.sqlpp.config.checked
-import com.jakway.sqlpp.config.checked.profiledir.CreateProfileDir
+import com.jakway.sqlpp.config.checked.profiledir.{CreateProfileDir, GetDefaultProfileDirLocation}
+import com.jakway.sqlpp.config.unchecked.{UncheckedConfig, ValidateUncheckedConfig}
 import com.jakway.sqlpp.config.unchecked.UncheckedConfig.CLIParsingFailedWithMessage
 import com.jakway.sqlpp.error.SqlppError
 
@@ -33,10 +34,15 @@ object Run {
     fmt.toString
   }
 
-  //TODO: parse config
-  private def parse(args: Array[String]):
+  def parse(args: Array[String]):
     Either[error.SqlppError, checked.Config] = {
+    UncheckedConfig
+      .parse(args)
+      .flatMap(ValidateUncheckedConfig.apply)
+  }
 
+  def printParseResult(args: Array[String]): Unit = {
+    println(parse(args))
   }
 
   def apply(args: Array[String]): Result = {
@@ -50,6 +56,7 @@ object Run {
   def apply(checkedConfig: checked.Config): Either[SqlppError, Unit] = {
     val ioMap = checkedConfig.ioMap
     for {
+      _ <- createProfileDir(checkedConfig)
       templateEngine <- checkedConfig.getTemplateEngine
       template <- templateEngine
         .loadTemplateFromInputStream(
@@ -65,14 +72,24 @@ object Run {
   private def createProfileDir(config: checked.Config):
     Either[SqlppError, Unit] = {
 
+    //wrap args
     def createProfileDir(dest: File): Either[SqlppError, Unit] =
-      CreateProfileDir.createProfileDir(config.)
+      CreateProfileDir.createProfileDir(
+        config.backends,
+        dest,
+        config.outputEncoding,
+        config.deleteProfileDirOnCreationFailure)
 
     config.createProfileDirOption match {
       case NoCreateProfileDir => Right({})
       case CreateDefaultProfileDir => {
-
+        GetDefaultProfileDirLocation
+          .apply()
+          .map(createProfileDir)
       }
+
+      case CreateUserPassedProfileDir(dest) =>
+        createProfileDir(dest)
     }
   }
 }

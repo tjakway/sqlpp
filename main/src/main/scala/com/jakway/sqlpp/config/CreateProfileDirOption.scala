@@ -26,7 +26,7 @@ object CreateProfileDirOption {
     override def choices: Option[Set[String]] = Some(Set("default"))
   }
 
-  class CreateUserPassedProfileDir(toCreate: File)
+  case class CreateUserPassedProfileDir(toCreate: File)
     extends CreateProfileDirOption {
     override def valueName: String = "Create profile dir at user-defined path"
     override def choices: Option[Set[String]] = Some(Set("<path>"))

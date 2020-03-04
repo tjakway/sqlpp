@@ -24,11 +24,11 @@ object Constants {
     type ResourceType = (String, String)
 
     private def prefix(resName: String): (String, String) =
-      (resName, "/gen/" + resName)
+      (resName, "/gen/" + resName + ".xml")
 
-    val postgres: ResourceType = prefix("postgres.xml")
-    val h2: ResourceType = prefix("h2.xml")
-    val defaults: ResourceType = prefix("defaults.xml")
+    val postgres: ResourceType = prefix("postgres")
+    val h2: ResourceType = prefix("h2")
+    val defaults: ResourceType = prefix("defaults")
 
     lazy val allResources: Set[ResourceType] = Set(
       postgres, h2, defaults

@@ -3,11 +3,13 @@ package com.jakway.sqlpp.config
 import java.io.{File, InputStream}
 import java.nio.charset.{Charset, StandardCharsets}
 
+import com.jakway.sqlpp.config.backend.BuiltinBackends
 import com.jakway.sqlpp.config.checked.{Config, TemplateStringInfo}
 import com.jakway.sqlpp.config.output.OutputTarget
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders
 import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
 import com.jakway.sqlpp.template.TemplateEngine.ExtraTemplateOptions
+import com.jakway.sqlpp.template.backend.Backend
 
 object Defaults {
   val defaultEncoding: Charset = StandardCharsets.UTF_8
@@ -32,6 +34,7 @@ object Defaults {
     val dataDirVarName: String = "SQLPP_DIR"
     val xdgConfigSubdirName: String = "sqlpp"
     val homeSubdirName: String = ".sqlpp"
+    val deleteOnFailure: Boolean = false
 
     object Options {
       val defaultRejectNonXmlFiles: Boolean = true
@@ -62,7 +65,10 @@ object Defaults {
         defaultResourceLoaderTypes,
         extraTemplateOptions,
         TemplateStringInfo.default,
-        DataDir.createProfileDirOption
+        DataDir.createProfileDirOption,
+        DataDir.deleteOnFailure,
+        //upcast them to backends
+        BuiltinBackends.all.map(x => x: Backend)
       )
     }
   }
