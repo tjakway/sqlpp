@@ -3,8 +3,11 @@ package com.jakway.sqlpp.config.unchecked
 import java.io.File
 
 import com.jakway.sqlpp.config.Defaults.{UncheckedConfig => UncheckedConfigDefaults}
+import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.config.{Constants, Defaults, VerbosityLevel}
 import com.jakway.sqlpp.error.SqlppError
+import org.slf4j.{Logger, LoggerFactory}
+import scopt.{DefaultOParserSetup, OParserSetup}
 
 //TODO: add StringRepositoryName parameter (probably
 // will only be used for debugging purposes)
@@ -36,6 +39,18 @@ case class UncheckedConfig(verbosityLevel: VerbosityLevel =
 
 object UncheckedConfig {
   import scopt.OParser
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+
+  class CLIParsingFailedError(override val msg: String)
+    extends ConfigError(msg)
+
+  case class CLIParsingFailedWithMessage(override val msg: String)
+    extends CLIParsingFailedError(msg)
+
+  case object CLIParsingFailedWithoutMessage
+    extends CLIParsingFailedError(getClass.getName)
+
   sealed abstract class CreateProfileDirOption
 
   object CreateProfileDirOption {
@@ -58,10 +73,62 @@ object UncheckedConfig {
     val addJar: String = prefix("add-jar")
   }
 
+  @Deprecated
   def parseOrExit(defaultConfigDir: String)
                  (args: Array[String]): UncheckedConfig = {
     val p = parser(defaultConfigDir)
     OParser.parse(p, args, UncheckedConfig()).get
+  }
+
+  def parse(defaultConfigDir: String)
+           (args: Array[String]): Either[SqlppError, UncheckedConfig] = {
+    var errorMessage: Option[String] = None
+
+    def getErrorMessage: Option[String] = {
+      synchronized(errorMessage)
+    }
+
+    val setup: OParserSetup = new DefaultOParserSetup {
+      override def terminate(exitState: Either[String, Unit]): Unit = {
+        exitState match {
+          case Left(errMsg) => {
+            synchronized {
+              errorMessage = Some(errMsg)
+            }
+          }
+          case _ => {}
+        }
+      }
+    }
+
+    val res = OParser.parse(
+      parser(defaultConfigDir),
+      args,
+      UncheckedConfig(),
+      setup)
+
+    res match {
+        //parsing successful, check for warnings
+      case Some(parsedConfig) => {
+        getErrorMessage match {
+          case Some(msg) => {
+            logger.warn("Parser returned config with" +
+              " additional messages: %s", msg)
+          }
+          case _ => {}
+        }
+
+        Right(parsedConfig)
+      }
+
+        //parsing failed, return error messages
+      case None => {
+        getErrorMessage match {
+          case Some(msg) => Left(CLIParsingFailedWithMessage(msg))
+          case None => Left(CLIParsingFailedWithoutMessage)
+        }
+      }
+    }
   }
 
   private def parser(defaultConfigDir: String) = {
