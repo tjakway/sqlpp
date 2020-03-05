@@ -56,7 +56,12 @@ object Run {
     Either[error.SqlppError, checked.Config] = {
     UncheckedConfig
       .parse(args)
-      .flatMap(ValidateUncheckedConfig.apply)
+      .flatMap {
+        case (warnings, config) => {
+          warnings.foreach(System.err.println)
+          ValidateUncheckedConfig.apply(config)
+        }
+      }
   }
 
   def printParseResult(args: Array[String]): Unit = {

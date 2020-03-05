@@ -82,26 +82,10 @@ object UncheckedConfig {
     OParser.parse(p, args, UncheckedConfig()).get
   }
 
-  def parse(args: Array[String]): Either[SqlppError, UncheckedConfig] = {
-    var errorMessage: Option[String] = None
+  def parse(args: Array[String]):
+    Either[SqlppError, (Option[String], UncheckedConfig)] = {
 
-    def getErrorMessage: Option[String] = {
-      synchronized(errorMessage)
-    }
-
-    val setup: OParserSetup = new DefaultOParserSetup {
-      override def terminate(exitState: Either[String, Unit]): Unit = {
-        exitState match {
-          case Left(errMsg) => {
-            synchronized {
-              errorMessage = Some(errMsg)
-            }
-          }
-          case _ => {}
-        }
-      }
-    }
-
+    val setup = new ParserSetup()
     val res = OParser.parse(
       parser,
       args,
@@ -111,7 +95,7 @@ object UncheckedConfig {
     res match {
         //parsing successful, check for warnings
       case Some(parsedConfig) => {
-        getErrorMessage match {
+        setup.getErrors match {
           case Some(msg) => {
             logger.warn("Parser returned config with" +
               " additional messages: %s", msg)
@@ -119,12 +103,12 @@ object UncheckedConfig {
           case _ => {}
         }
 
-        Right(parsedConfig)
+        Right((setup.getWarnings, parsedConfig))
       }
 
         //parsing failed, return error messages
       case None => {
-        getErrorMessage match {
+        setup.getErrors match {
           case Some(msg) => Left(CLIParsingFailedWithMessage(msg))
           case None => Left(CLIParsingFailedWithoutMessage)
         }
