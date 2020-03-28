@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test normalizeTestWhitespace="false" allowEmptyTests="true">
+    <!-- check that empty input -> empty output on all backends -->
+    <input></input>
+
+    <result backend="defaults"></result>
+    <result backend="postgres"></result>
+    <result backend="h2"></result>
+</test>

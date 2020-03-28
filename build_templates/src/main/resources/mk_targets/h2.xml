@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
+    <entry key="in_target_name">SQLPP_H2_TARGET</entry>
+
     <!-- H2 adds an underscore for some reason -->
     <entry key="in_index_type_pk_autoinc">INTEGER PRIMARY KEY AUTO_INCREMENT</entry>
 

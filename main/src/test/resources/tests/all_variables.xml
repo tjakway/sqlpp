@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test normalizeTestWhitespace="true">
+    <!-- enumerate all keys -->
+    <input>
+        $TEXT_TYPE, $INDEX_TYPE
+        $INDEX_TYPE_PK_AUTOINC, $BLOB_TYPE
+        $INDEX_REF_TYPE, $DECIMAL_TYPE
+    </input>
+
+    <result backend="defaults">
+        VARCHAR(65535), INTEGER
+        INTEGER PRIMARY KEY AUTOINCREMENT, BLOB
+        INTEGER, DECIMAL
+    </result>
+
+    <result backend="postgres">
+        TEXT, SERIAL
+        SERIAL PRIMARY KEY, BLOB
+        INTEGER, DECIMAL
+    </result>
+
+    <result backend="h2">
+        VARCHAR(65535), INTEGER
+        INTEGER PRIMARY KEY AUTO_INCREMENT, BINARY
+        INTEGER, DECIMAL
+    </result>
+</test>

@@ -1,13 +1,12 @@
 package com.jakway.sqlpp.template
 
-import java.io.{BufferedInputStream, File, FileInputStream}
-
-import com.jakway.sqlpp.error.SqlppError
-import com.jakway.sqlpp.util.{ContextUtil, MapToProperties}
-import org.apache.velocity.VelocityContext
+import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.util.Properties
 
+import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.template.ValueSource.ValueSourceError
+import com.jakway.sqlpp.util.ContextUtil
+import org.apache.velocity.VelocityContext
 
 import scala.util.{Failure, Success, Try}
 
@@ -30,6 +29,17 @@ object ValueSource {
   }
 }
 
+/**
+ * implements ValueSource by forwarding to an internally contained
+ * ValueSource
+ */
+trait DelegatingValueSource extends ValueSource {
+  override def toVelocityContext: Either[SqlppError, VelocityContext] =
+    getValueSource.flatMap(_.toVelocityContext)
+
+  def getValueSource(): Either[SqlppError, ValueSource]
+}
+
 case class PropertySource(prop: Properties) extends ValueSource {
   override def toVelocityContext: Either[SqlppError, VelocityContext] = {
     ContextUtil.propertiesToContextE_(prop)
@@ -38,9 +48,13 @@ case class PropertySource(prop: Properties) extends ValueSource {
 
 object PropertySource {
   def fromXML(file: File): Either[SqlppError, PropertySource] = {
+    fromXML(new BufferedInputStream(new FileInputStream(file)))
+  }
+
+  def fromXML(inputStream: InputStream): Either[SqlppError, PropertySource] = {
     Try {
       val p = new Properties()
-      p.loadFromXML(new BufferedInputStream(new FileInputStream(file)))
+      p.loadFromXML(inputStream)
       PropertySource(p)
     } match {
       case Success(x) => Right(x)
@@ -52,6 +66,7 @@ object PropertySource {
 case class MapSource(map: Map[String, String]) extends ValueSource {
   override def toVelocityContext: Either[SqlppError, VelocityContext] = {
     import java.util.{Map => JMap}
+
     import scala.collection.JavaConverters
 
     val convMap: JMap[String, Object] = {

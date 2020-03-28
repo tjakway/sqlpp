@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test normalizeTestWhitespace="true">
+    <input>SELECT TABLE People(id $INDEX_TYPE_PK_AUTOINC, name $TEXT_TYPE, address $TEXT_TYPE)</input>
+
+    <result backend="defaults">
+        SELECT TABLE People(id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            name VARCHAR(65535),
+                            address VARCHAR(65535))
+    </result>
+
+    <result backend="postgres">
+        SELECT TABLE People(id SERIAL PRIMARY KEY,
+                            name TEXT,
+                            address TEXT)
+    </result>
+
+    <result backend="h2">
+        SELECT TABLE People(id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                            name VARCHAR(65535),
+                            address VARCHAR(65535))
+    </result>
+</test>

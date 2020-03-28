@@ -1,7 +1,7 @@
 package com.jakway.sqlpp.config.env
 
-import com.jakway.sqlpp.config.Config.ConfigError
 import com.jakway.sqlpp.config.env.SqlppSystemReader.Error.{SqlppSystemReaderError, SqlppSystemReaderInvalidKeyError, SqlppSystemReaderKeyNotFoundError}
+import com.jakway.sqlpp.config.error.ConfigError
 import com.jakway.sqlpp.error.SqlppError
 import com.jakway.sqlpp.util.env.SystemValuesReader
 

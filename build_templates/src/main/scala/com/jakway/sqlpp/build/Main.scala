@@ -22,6 +22,12 @@ object Main {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
+  /**
+   * currently we don't use the string repository,
+   * but we need to provide a name anyway
+   */
+  val stringRepositoryName: String = "build_templates_repo"
+
   def main(args: Array[String]): Unit = {
     run() match {
       case Right(_) => logger.info("Done.")
@@ -95,18 +101,18 @@ object Main {
     for {
       _ <- CheckFile.checkExists(out)
       _ <- CheckFile.checkIsDirectory(out)
-      _ <- CheckFile.checkWriteable(out)
+      _ <- CheckFile.checkWritable(out)
     } yield {}
   }
 
-  private val resourceLoaders: Set[LoaderType] = Set {
+  private val resourceLoaders: Set[LoaderType] = Set(
     ResourceLoaderConfig.StandardResourceLoaders.ClassLoader
-  }
+  )
 
   private def getTemplateEngine: Either[SqlppError, TemplateEngine] = {
     TemplateEngine.apply(
       GeneralVelocityOptions.defaultEncoding)(resourceLoaders
-      )(ExtraTemplateOptions(Seq(), Seq())
+      )(ExtraTemplateOptions(stringRepositoryName, Seq(), Seq())
       )(GeneralVelocityOptions())
   }
 }
