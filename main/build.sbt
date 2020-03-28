@@ -1,7 +1,7 @@
 import sqlpp.project.CommonSettings
 import sqlpp.project.Dependencies
 
-name := "main"
+name := "sqlpp"
 
 version := CommonSettings.version
 
