@@ -124,6 +124,8 @@ object UncheckedConfig {
       programName(Constants.programName),
       head(Constants.programName, Constants.version),
 
+      help("help").text("Print this help text"),
+
       opt[Option[String]]('s', "source")
         .action((x, c) => c.copy(source = x)),
 
