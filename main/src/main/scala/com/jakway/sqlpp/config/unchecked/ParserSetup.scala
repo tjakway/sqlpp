@@ -26,7 +26,8 @@ class ParserSetup extends DefaultOParserSetup {
       case _ => {}
   }
 
+  private lazy val newline: String = String.format("\n")
 
-  override def reportError(msg: String): Unit = errors.append(msg)
-  override def reportWarning(msg: String): Unit = warnings.append(msg)
+  override def reportError(msg: String): Unit = errors.append(msg + newline)
+  override def reportWarning(msg: String): Unit = warnings.append(msg + newline)
 }
