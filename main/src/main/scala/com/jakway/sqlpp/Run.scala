@@ -30,7 +30,7 @@ object Run {
       }
     }
 
-    fmt.format("Error, message follows\n%s\n", print)
+    fmt.format("Error, message follows:\n%s\n", print)
     fmt.toString
   }
 
