@@ -155,7 +155,7 @@ object UncheckedConfig {
         .action((x, c) =>
           c.copy(targetBackends = c.targetBackends :+ x)),
 
-      opt[String]('e', "input-encoding")
+      opt[String]("input-encoding")
         .action((x, c) => c.copy(inputEncoding = Some(x)))
         .text(s"Input and output encoding," +
           s" default: ${Defaults.defaultEncoding}")
