@@ -131,10 +131,7 @@ object UncheckedConfig {
 
       opt[String]('t', "output-template")
         .required()
-        .text("Template to process the source through." +
-          " Can be a path or resource identifier if using" +
-          " the jar or classpath resource loaders.")
-        .valueName("<apache velocity template identifier>")
+        .valueName("<output pattern>")
         .action((x, c) => c.copy(outputTemplate = Some(x))),
 
       opt[String]('l', "add-backend-location")
