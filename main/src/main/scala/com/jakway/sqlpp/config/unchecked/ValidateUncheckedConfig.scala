@@ -237,8 +237,9 @@ object ValidateUncheckedConfig {
           UncheckedConfig.OptionNames.noCreateProfileDir +
             " is incompatible with " +
             UncheckedConfig.OptionNames.createProfileDir))
+      } else if(noCreateProfileDir) {
+        Right(CreateProfileDirOption.NoCreateProfileDir)
       } else {
-
         CreateProfileDirOption.parse(
           createProfileDir,
           UncheckedConfig.OptionNames.createProfileDir)
