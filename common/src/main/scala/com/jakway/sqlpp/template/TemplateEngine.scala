@@ -11,7 +11,8 @@ import org.apache.velocity.Template
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.context.Context
 import org.apache.velocity.exception.{ParseErrorException, ResourceNotFoundException}
-import org.apache.velocity.runtime.resource.util.StringResourceRepository
+import org.apache.velocity.runtime.resource.util.{StringResourceRepository, StringResourceRepositoryImpl}
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.{Failure, Success, Try}
 
@@ -222,7 +223,7 @@ object TemplateEngine {
       }
     }
 
-    private def getStringResourceRepository(engine: VelocityEngine,
+    def getStringResourceRepository(engine: VelocityEngine,
                                             repositoryName: String):
       Either[SqlppError, StringResourceRepository] = {
 
@@ -300,6 +301,8 @@ object TemplateEngine {
 
 
   private object Constructor {
+    val logger: Logger = LoggerFactory.getLogger(getClass)
+
     class TemplateEngineConstructorError(override val msg: String)
       extends TemplateEngineError(msg)
 
@@ -383,6 +386,41 @@ object TemplateEngine {
       }
     }
 
+    /**
+     * adds the string resource repository if it doesn't exist
+     * @return
+     */
+    private def initStringRepository: VelocityEngine =>
+      String => Either[SqlppError, StringResourceRepository] =
+      ve => repositoryName => {
+
+        def addRepo() = {
+          val repo = new StringResourceRepositoryImpl()
+          logger.debug(s"Added new StringResourceRepositoryImpl" +
+            s" < $repo > under key $repositoryName")
+          ve.setApplicationAttribute(
+            repositoryName, repo)
+          repo
+        }
+
+        def res = Try {
+          TemplateEngine
+            .GetTemplate
+            .getStringResourceRepository(ve, repositoryName) match {
+            case Left(_) => {
+              Right(addRepo())
+            }
+            case x => x
+          }
+        }
+
+        res match {
+          case Success(x) => x
+          case Failure(t) => Left(new StringResourceRepositoryError(
+            SqlppError.formatThrowableCause(t)))
+        }
+    }
+
 
     def apply: String =>
                Set[LoaderType] =>
@@ -398,6 +436,9 @@ object TemplateEngine {
           loaderTypes)(extraTemplateOptions)(additionalVelocityProperties)
 
         engine <- getVelocityEngine(mergedProperties)
+
+        _ <- initStringRepository(
+          engine)(extraTemplateOptions.stringRepositoryName)
       } yield {
         new TemplateEngine {
           override val initProperties: Properties = mergedProperties
