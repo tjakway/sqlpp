@@ -26,7 +26,11 @@ object Run {
           //handle option parsing errors to be more traditional
           //(don't print the class containing the error)
         case CLIParsingFailedWithMessage(msg) => msg
-        case _ => sqlppError.print
+        case _ => {
+          String.format("%s\n%s",
+            sqlppError.print,
+            sqlppError.stackTraceToString)
+        }
       }
     }
 

@@ -6,6 +6,8 @@ import java.util.Formatter
 class SqlppError(val msg: String)
   extends RuntimeException(msg) {
   def print: String = toString
+
+  def stackTraceToString: String = SqlppError.stackTraceToString(this)
 }
 
 object SqlppError {
