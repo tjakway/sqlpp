@@ -129,7 +129,7 @@ object UncheckedConfig {
       opt[Option[String]]('s', "source")
         .action((x, c) => c.copy(source = x)),
 
-      opt[String]('t', "output-template")
+      opt[String]('t', "output")
         .required()
         .valueName("<output pattern>")
         .action((x, c) => c.copy(outputTemplate = Some(x))),
