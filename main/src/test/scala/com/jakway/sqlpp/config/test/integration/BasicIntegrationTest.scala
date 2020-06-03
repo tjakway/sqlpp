@@ -1,6 +1,8 @@
 package com.jakway.sqlpp.config.test.integration
 
-import com.jakway.sqlpp.config.test.framework.WithTempDirBeforeAndAfter
+import java.io.File
+
+import com.jakway.sqlpp.config.test.framework.{TestFileUtils, WithTempDirBeforeAndAfter}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.slf4j.{Logger, LoggerFactory}
@@ -8,13 +10,15 @@ import org.slf4j.{Logger, LoggerFactory}
 class BasicIntegrationTest
   extends AnyFlatSpec
     with Matchers
-    with WithTempDirBeforeAndAfter {
+    with WithTempDirBeforeAndAfter
+    with TestFileUtils{
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  val args = Seq(
+  def args(input: File, outputDest: File) = Seq(
     "--no-create-profile-dir",
     "--resource-loader-types", "file,class",
-
+    "--source", input,
+    "--output", outputDest.getAbsolutePath
   )
 
   val input: String = "CREATE TABLE Users(" +
@@ -47,7 +51,7 @@ class BasicIntegrationTest
 
 
   "Sqlpp" should "run" in {
-    
+
   }
 
 }
