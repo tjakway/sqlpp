@@ -72,8 +72,12 @@ object Run {
     println(parse(args))
   }
 
+  def applyEither(args: Array[String]): Either[SqlppError, Unit] = {
+    parse(args).flatMap(apply)
+  }
+
   def apply(args: Array[String]): Result = {
-    parse(args).flatMap(apply) match {
+    applyEither(args) match {
       case Right(_) => Result(Result.successCode, None)
       case Left(error) =>
         Result(1, Some(printErrorMessage(error)))
