@@ -5,6 +5,7 @@ import java.util.Formatter
 
 import com.jakway.sqlpp
 import com.jakway.sqlpp.Run
+import com.jakway.sqlpp.config.test.TestResources
 import com.jakway.sqlpp.config.test.error.TestError
 import com.jakway.sqlpp.config.test.framework.{TestFileUtils, WithTempDirBeforeAndAfter}
 import com.jakway.sqlpp.config.test.integration.BasicIntegrationTest.UnexpectedOutputError
@@ -25,11 +26,11 @@ class BasicIntegrationTest
     "--resource-loader-types", "file,class",
     "--source", input.getAbsolutePath,
     "--output", outputDest.getAbsolutePath,
-    "--target-backends", "defaults.xml"
+    "--target-backends", TestResources.defaultsBackend
   )
 
   val input: String = "CREATE TABLE Users(" +
-    "id $INDEX_TYPE_PK_AUTOINC," +
+    "id $INDEX_TYPE_PK_AUTOINC, " +
     "name $TEXT_TYPE)"
 
   val replacementMap: Map[String, String] = Map(
