@@ -2,7 +2,7 @@ package com.jakway.sqlpp.error
 
 import java.io.{File, Writer}
 
-import com.jakway.sqlpp.error.CheckFile.FileError.{CannotExecuteError, CannotReadError, CannotWriteError, ExceptionThrownDuringOperationError, FileDoesNotExistError, FileExistsError, MkdirError, NotDirectoryError, NotFileError}
+import com.jakway.sqlpp.error.CheckFile.FileError.{CannotExecuteError, CannotReadError, CannotWriteError, ExceptionThrownDuringOperationError, FileDoesNotExistError, FileEmptyError, FileExistsError, MkdirError, NotDirectoryError, NotFileError}
 
 import scala.util.{Failure, Success, Try}
 
@@ -63,6 +63,9 @@ object CheckFile {
     class MkdirError(override val f: File)
       extends OperationError(f, s"$f.mkdir returned false")
 
+    class FileEmptyError(override val f: File)
+      extends OperationError(f, s"$f.length returned 0")
+
     class SetPermissionError(override val f: File,
                              val setTo: Boolean,
                              val permissionVerb: String)
@@ -116,6 +119,7 @@ object CheckFile {
   def checkExecutable: FileCheckF = mkCheck(_.canExecute)(new CannotExecuteError(_))
   def checkIsFile: FileCheckF = mkCheck(_.isFile)(new NotFileError(_))
   def checkIsDirectory: FileCheckF = mkCheck(_.isDirectory)(new NotDirectoryError(_))
+  def checkNonEmpty: FileCheckF = mkCheck(_.length() != 0)(new FileEmptyError(_))
 
   private def operationReturnsBoolean(idempotentCondition: File => Boolean,
                                       op: File => Boolean)
