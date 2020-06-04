@@ -4,7 +4,7 @@ import java.io.{ByteArrayInputStream, File, InputStream, Writer}
 import java.util.Properties
 
 import com.jakway.sqlpp.error.SqlppError
-import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.LoaderType
+import com.jakway.sqlpp.template.ResourceLoaderConfig.StandardResourceLoaders.{LoaderType, StringLoader}
 import com.jakway.sqlpp.template.TemplateEngine.{IOMap, OpenOutputWriterError, TemplateEngineException}
 import com.jakway.sqlpp.util._
 import org.apache.velocity.Template
@@ -433,7 +433,8 @@ object TemplateEngine {
         additionalVelocityProperties =>
       for {
         mergedProperties <- getMergedProperties(
-          loaderTypes)(extraTemplateOptions)(additionalVelocityProperties)
+          loaderTypes + StringLoader)(
+          extraTemplateOptions)(additionalVelocityProperties)
 
         engine <- getVelocityEngine(mergedProperties)
 
