@@ -200,7 +200,7 @@ object ValidateUncheckedConfig {
         nameWithoutSeparator(File.pathSeparator) ++
         nameWithoutSeparator(File.separator))
         .map(_.trim)
-        .filter(_.isEmpty)
+        .filter(_.nonEmpty)
     }
 
     private def outputPatternToIOMap(outputPattern: OutputPattern,
