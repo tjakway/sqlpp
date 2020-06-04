@@ -162,7 +162,7 @@ object ResourceLoaderConfig {
     }
 
     object LoaderType {
-      val all: Set[LoaderType] = Set(FileLoader, ClassLoader, JarLoader)
+      val all: Set[LoaderType] = Set(FileLoader, ClassLoader, JarLoader, StringLoader)
 
       class LoaderTypeReadError(override val msg: String)
         extends StandardResourceLoaderError(msg)
