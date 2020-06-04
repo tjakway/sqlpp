@@ -34,8 +34,9 @@ class BasicIntegrationTest
     "name $TEXT_TYPE)"
 
   val replacementMap: Map[String, String] = Map(
-    "$TEXT_TYPE" -> "VARCHAR(65535)",
-    "$INDEX_TYPE_PK_AUTOINC" -> "INTEGER PRIMARY KEY AUTOINCREMENT"
+    //need to escape the $ for String.replaceAll to work
+    "\\$TEXT_TYPE" -> "VARCHAR(65535)",
+    "\\$INDEX_TYPE_PK_AUTOINC" -> "INTEGER PRIMARY KEY AUTOINCREMENT"
   )
 
   def mkExpectedOutput(kvs: Map[String, String])(input: String): String = {
