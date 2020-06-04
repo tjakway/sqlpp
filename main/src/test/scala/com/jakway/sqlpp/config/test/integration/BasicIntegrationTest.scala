@@ -121,7 +121,6 @@ object BasicIntegrationTest {
       } else if(!x.isEmpty && x.trim.isEmpty) {
         fmt.format(s"<string consists of ${x.length} whitespace characters>\n")
       } else {
-        import scala.collection.JavaConverters
         x.lines.toArray.foreach { line =>
           fmt.format("%s\t%s\n", leftCharacter, line)
         }
