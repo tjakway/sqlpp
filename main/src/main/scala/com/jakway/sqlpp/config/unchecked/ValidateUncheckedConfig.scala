@@ -292,7 +292,7 @@ object ValidateUncheckedConfig {
 
         pattern match {
           case Some(x) => {
-            logger.debug("Parsing output pattern %s", x)
+            logger.debug(s"Parsing output pattern $x")
             apply(encoding, requireFormatSymbol, x)
           }
           case None => {
