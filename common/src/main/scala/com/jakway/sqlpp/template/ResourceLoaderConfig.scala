@@ -97,7 +97,7 @@ object ResourceLoaderConfig {
   }
 
   object StandardResourceLoaders {
-    private val modificationCheckIntervalString: String = "modification_check_interval"
+    private val modificationCheckIntervalString: String = "modificationCheckInterval"
 
     class StandardResourceLoaderError(override val msg: String)
       extends ResourceLoaderConfigError(msg)
