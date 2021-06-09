@@ -11,9 +11,9 @@ scalacOptions ++= CommonSettings.scalacOptions
 
 val main = Some("com.jakway.sqlpp.Main")
 
-mainClass in (Compile, run) := main 
+Compile / mainClass := main 
 
 //sbt-assembly settings
 //see https://github.com/sbt/sbt-assembly
-mainClass in assembly := main
-assemblyJarName in assembly := "sqlpp.jar"
+assembly / mainClass := main
+assembly / assemblyJarName := "sqlpp.jar"
