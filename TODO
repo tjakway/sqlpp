@@ -1,0 +1,3 @@
+in Defaults.scala: change homeSubdirName to only be a hidden dir (prefixed '.') if it's in $HOME:
+    if $XDG_CONFIG_HOME -> $XDG_CONFIG_HOME/sqlpp
+    else $HOME/.sqlpp
